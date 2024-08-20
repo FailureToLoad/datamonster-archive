@@ -6,15 +6,10 @@ A website for managing Kingdom Death: Monster campaigns.
 
 - [Vite configured for React with Typescript and SWC](https://vitejs.dev/)
 - [TailwindCSS](https://tailwindcss.com/)
-- [Tanstack Query](https://tanstack.com/query/latest/docs/framework/react/overview)
+- [Apollo Client](https://www.apollographql.com/docs/react/)
 - [shadcn/ui](https://ui.shadcn.com/docs)
 - [Vitest with jsdom](https://vitest.dev/)
 - [React Router](https://reactrouter.com/en/main)
-
-## Related Projects
-
- [datamonster.api](https://github.com/FailureToLoad/datamonster.api) - The api this site is designed to work against.  
- [datamonster.records](https://github.com/FailureToLoad/datamonster.records) - A containerized postgres database the api uses for persistence.  
 
 ## Requirements
 

@@ -1,2 +1,3 @@
-# datamonster
-An application for managing Kingdom Death campaigns
+# Datamonster
+
+An application for managing Kingdom Death campaigns.
