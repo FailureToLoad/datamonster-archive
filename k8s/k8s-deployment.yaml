@@ -1,0 +1,123 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dm-web
+  labels:
+    app: dm-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dm-web
+  template:
+    metadata:
+      labels:
+        app: dm-web
+    spec:
+      containers:
+        - name: dm-web
+          image: <web-image-name> # Replace with your web image name
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dm-web
+spec:
+  type: LoadBalancer # Change to NodePort if not using a cloud provider
+  selector:
+    app: dm-web
+  ports:
+    - port: 80
+      targetPort: 80
+      # Optional: Define a nodePort if using NodePort type
+      # nodePort: 30080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dm-api
+  labels:
+    app: dm-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dm-api
+  template:
+    metadata:
+      labels:
+        app: dm-api
+    spec:
+      containers:
+        - name: dm-api
+          image: <api-image-name> # Replace with your API image name
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dm-api
+spec:
+  type: ClusterIP
+  selector:
+    app: dm-api
+  ports:
+    - port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dm-records
+  labels:
+    app: dm-records
+spec:
+  serviceName: "dm-records"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dm-records
+  template:
+    metadata:
+      labels:
+        app: dm-records
+    spec:
+      containers:
+        - name: dm-records
+          image: postgres:16
+          env:
+            - name: POSTGRES_DB
+              value: records
+            - name: POSTGRES_USER
+              value: app
+            - name: POSTGRES_PASSWORD
+              value: Password1
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: postgres-persistent-storage
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-persistent-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dm-records
+spec:
+  type: ClusterIP
+  selector:
+    app: dm-records
+  ports:
+    - port: 5432
+      targetPort: 5432
