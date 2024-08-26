@@ -2,31 +2,25 @@ package main
 
 import (
 	"context"
-	"entgo.io/contrib/entgql"
+	"log"
+
 	"entgo.io/ent/dialect"
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/failuretoload/datamonster/config"
 	"github.com/failuretoload/datamonster/ent"
 	"github.com/failuretoload/datamonster/ent/migrate"
-	"github.com/failuretoload/datamonster/graph"
-	"github.com/failuretoload/datamonster/helpers"
 	"github.com/failuretoload/datamonster/server"
 	_ "github.com/lib/pq"
-	"log"
 )
 
-var (
-	app server.Server
-)
+var settings config.Settings
 
 func init() {
-	app = server.NewServer()
+	settings = config.GetSettings()
 }
 
 func main() {
-	// Create ent.Client and run the schema migration.
-	conn := helpers.SafeGetEnv("GQL_DEV")
-	client, err := ent.Open(dialect.Postgres, conn)
+
+	client, err := ent.Open(dialect.Postgres, settings.ConnString)
 	if err != nil {
 		log.Fatal("opening ent client", err)
 	}
@@ -34,18 +28,11 @@ func main() {
 		context.Background(),
 		migrate.WithGlobalUniqueID(true),
 	); schemaErr != nil {
+		log.Println("db url", settings.ConnString)
 		log.Fatal("opening ent client", schemaErr)
 	}
 
-	srv := handler.NewDefaultServer(graph.NewSchema(client))
-	srv.Use(entgql.Transactioner{TxOpener: client})
-	appEnv := helpers.SafeGetEnv("APP_ENV")
-	if appEnv == "schema" {
-		app.Handle("/",
-			playground.Handler("Datamonster", "/graphql"),
-		)
-	}
+	app := server.NewServer(client, settings.ClientUri)
 
-	app.Handle("/graphql", srv)
-	app.Run()
+	app.Run(settings.AuthKey)
 }

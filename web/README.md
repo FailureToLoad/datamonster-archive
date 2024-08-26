@@ -17,6 +17,17 @@ A managed [Clerk](https://clerk.com/) instance for authentication.
 
 ## Set Up
 
-- Create your own .env.local file by using the env.local.example file as a base.
-- Clone, set up, build, and run [datamonster.records](https://github.com/FailureToLoad/datamonster.records).
-- Clone, set up, build and run [datamonster.api](https://github.com/FailureToLoad/datamonster.api).
+Work in progress: I've torn things apart a bit to get the compose working. I need to work backwards towards getting a local workflow that's compatible with the compose workflow.
+
+The key difference is that the web container acts as a reverse proxy for calls to the api container. To mimic this locally I need to put together (and test) instructions for setting up nginx as a reverse proxy.
+
+### Compose
+
+The compose file is set up to use a vault to prove out how this might work in a containzerized deployment. To use it with purely local values, change the environment variables in `api/Dockerfile` to be the following.
+
+```Dockerfile
+ENV MODE=dev
+ENV KEY="your Clerk secret key"
+ENV CONN='host=localhost port=8070 user=app dbname=records password=Password1 sslmode=disable'
+ENV CLIENT='dm-web'
+```
