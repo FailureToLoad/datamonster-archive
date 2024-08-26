@@ -2,13 +2,19 @@ package server
 
 import (
 	"context"
-	clerkhttp "github.com/clerk/clerk-sdk-go/v2/http"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"log"
 	"net/http"
 	"time"
 
+	"entgo.io/contrib/entgql"
+	"github.com/99designs/gqlgen/graphql/handler"
+	clerkhttp "github.com/clerk/clerk-sdk-go/v2/http"
+
 	"github.com/clerk/clerk-sdk-go/v2"
-	"github.com/failuretoload/datamonster/helpers"
+	"github.com/failuretoload/datamonster/config"
+	"github.com/failuretoload/datamonster/ent"
+	"github.com/failuretoload/datamonster/graph"
 	"github.com/go-chi/cors"
 
 	"github.com/unrolled/secure"
@@ -21,7 +27,7 @@ type Server struct {
 	Mux *chi.Mux
 }
 
-func NewServer() Server {
+func NewServer(client *ent.Client, clientURI string) Server {
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
@@ -29,15 +35,23 @@ func NewServer() Server {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 	router.Use(middleware.Timeout(10 * time.Second))
-	env := helpers.SafeGetEnv("APP_ENV")
-	if env != "schema" {
+	router.Use(CorsHandler(clientURI))
+	mode := config.Mode()
+	if mode != "schema" {
 		router.Use(SecureOptions())
 		router.Use(CacheControl)
-		router.Use(CorsHandler())
 		router.Use(clerkhttp.WithHeaderAuthorization())
 		router.Use(UserIdExtractor)
 	}
 
+	srv := handler.NewDefaultServer(graph.NewSchema(client))
+	srv.Use(entgql.Transactioner{TxOpener: client})
+	router.Handle("/graphql", srv)
+	if mode == "schema" {
+		router.Handle("/",
+			playground.Handler("Datamonster.gql", "/graphql"),
+		)
+	}
 	return Server{
 		Mux: router,
 	}
@@ -47,10 +61,10 @@ func (s Server) Handle(route string, handler http.Handler) {
 	s.Mux.Handle(route, handler)
 }
 
-func (s Server) Run() {
-	clerk.SetKey(helpers.SafeGetEnv("CLERK_SECRET_KEY"))
+func (s Server) Run(authKey string) {
+	clerk.SetKey(authKey)
 	log.Default().Println("Starting server on port 8080")
-	err := http.ListenAndServe(":8080", s.Mux)
+	err := http.ListenAndServe("0.0.0.0:8080", s.Mux)
 	if err != nil {
 		log.Default().Fatal(err)
 	}
@@ -82,10 +96,9 @@ func CacheControl(next http.Handler) http.Handler {
 	})
 }
 
-func CorsHandler() func(http.Handler) http.Handler {
-	client := helpers.SafeGetEnv("WEB_CLIENT")
+func CorsHandler(clientURI string) func(http.Handler) http.Handler {
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{client},
+		AllowedOrigins:   []string{clientURI},
 		AllowedMethods:   []string{"HEAD", "GET", "POST", "OPTIONS"},
 		AllowedHeaders:   []string{"Origin", "Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		AllowCredentials: true,
