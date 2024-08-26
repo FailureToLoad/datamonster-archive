@@ -12,7 +12,7 @@ import {
 import {setContext} from '@apollo/client/link/context';
 
 const httpLink = createHttpLink({
-  uri: `${import.meta.env.VITE_API_HOST}/graphql`,
+  uri: `/graphql`,
   credentials: 'include',
 });
 
