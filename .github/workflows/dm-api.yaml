@@ -31,7 +31,7 @@ jobs:
           context: ./api
           file: ./api/Dockerfile # Update the path to your API Dockerfile if needed
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/$(echo ${{ github.repository }}-api | tr '[:upper:]' '[:lower:]'):latest
+          tags: ghcr.io/failuretoload/datamonster-api:latest
           build-args: |
             AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}
             AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}
