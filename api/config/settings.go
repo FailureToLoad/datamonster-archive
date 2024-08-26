@@ -64,12 +64,7 @@ func settingsFromVault() Settings {
 		log.Fatalf("failed to get connection: %v", err)
 	}
 	settings.ConnString = *connResp.Value
-
-	clientURIResp, err := client.GetSecret(context.TODO(), ClientURI, version, nil)
-	if err != nil {
-		log.Fatalf("failed to get connection: %v", err)
-	}
-	settings.ClientUri = *clientURIResp.Value
+	settings.ClientUri = "dm-api"
 	return settings
 }
 
