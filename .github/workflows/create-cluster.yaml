@@ -16,6 +16,16 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Check and Create Role Assignment
+        id: create_role_assignment
+        run: |
+          existing_role=$(az role assignment list --assignee ${{ secrets.AZURE_PRINCIPAL_ID }} --role "Contributor" --scope "/subscriptions/${{ secrets.SUB_ID }}/resourceGroups/datamonster" --query "[?principalId=='${{ secrets.AZURE_PRINCIPAL_ID }}'].id" -o tsv)
+          if [ -z "$existing_role" ]; then
+            az role assignment create --assignee ${{ secrets.AZURE_PRINCIPAL_ID }} --role "Contributor" --scope "/subscriptions/${{ secrets.SUB_ID }}/resourceGroups/datamonster"
+          else
+            echo "Role assignment already exists."
+          fi
+
       - name: Deploy AKS cluster using Bicep
         run: |
           az deployment group create \
@@ -25,7 +35,6 @@ jobs:
               aksClusterName='dm-cluster' \
               clientId='${{ secrets.AZURE_CLIENT_ID }}' \
               clientKey='${{ secrets.AZURE_CLIENT_SECRET }}' \
-              principalId='${{ secrets.AZURE_PRINCIPAL_ID }}'
             
       - name: Set up Kubernetes context
         run: |
