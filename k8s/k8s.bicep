@@ -21,7 +21,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-04-01' = {
 }
 
 resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2021-04-01' = {
-  name: 'dmclusterblob'
+  name: 'default'
   parent: storageAccount
 }
 
