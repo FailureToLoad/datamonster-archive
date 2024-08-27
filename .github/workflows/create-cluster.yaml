@@ -28,8 +28,11 @@ jobs:
 
       - name: Deploy AKS cluster using Bicep
         run: |
-          az deployment group create \
+          az stack group create \
+            --name dm-k8s \
             --resource-group datamonster \
+            --action-on-unmanage deleteResources \
+            --deny-settings-mode None \
             --template-file k8s/k8s.bicep \
             --parameters location='westus3' \
               aksClusterName='dm-cluster' \
