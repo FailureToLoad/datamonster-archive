@@ -13,6 +13,12 @@ param dnsPrefix string = 'myaksdns'
 @description('The ID of the principal that will have Contributor role on the AKS cluster.')
 param principalId string
 
+@description('The client ID of the service principal used by the AKS cluster for authentication to Azure APIs')
+param clientId string
+
+@description('The client secret of the service principal used by the AKS cluster for authentication to Azure APIs')
+param clientKey string
+
 @description('The name of the storage account.')
 param storageAccountName string = 'mystorageaccount'
 
@@ -25,6 +31,10 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-01-01' = {
   properties: {
     kubernetesVersion: kubernetesVersion
     dnsPrefix: dnsPrefix
+    servicePrincipalProfile: {
+      clientId: clientId
+      secret: clientKey
+    }
     networkProfile: {
       networkPlugin: 'azure'
       serviceCidr: '10.0.0.0/16'
