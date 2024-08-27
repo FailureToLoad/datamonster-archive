@@ -21,14 +21,14 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-01-01' = {
     dnsPrefix: 'dmc'
     agentPoolProfiles: [
       {
-        name: 'systemPool'
+        name: 'nodepool1'
         count: 1
         vmSize: 'Standard_B2s'
         osType: 'Linux'
         mode: 'System'
       }
       {
-        name: 'userPool'
+        name: 'nodepool2'
         count: 1
         vmSize: 'Standard_B2s'
         osType: 'Linux'
@@ -58,7 +58,7 @@ resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-prev
 }
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-04-01' = {
-  name: 'dm-cluster-storage'
+  name: 'dmclusterstorage'
   location: location
   sku: {
     name: 'Standard_LRS'
@@ -68,12 +68,12 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-04-01' = {
 }
 
 resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2021-04-01' = {
-  name: 'dm-cluster-blob'
+  name: 'dmclusterblob'
   parent: storageAccount
 }
 
 resource storageContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2021-09-01' = {
-  name: 'dm-cluster-container'
+  name: 'dmclustercontainer'
   parent: blobService
   properties: {
     publicAccess: 'None'
