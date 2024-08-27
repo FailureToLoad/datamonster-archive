@@ -27,7 +27,7 @@ kind: Service
 metadata:
   name: dm-web
 spec:
-  type: LoadBalancer # Public-facing service
+  type: ClusterIP # Public-facing service
   selector:
     app: dm-web
   ports:
@@ -98,7 +98,7 @@ spec:
             - name: POSTGRES_PASSWORD
               value: Password1
             - name: PGDATA
-              value: /var/lib/postgresql/data/pgdata
+              value: /var/lib/postgresql/data/pgdata/cluster
           ports:
             - containerPort: 5432
           volumeMounts:
@@ -162,3 +162,4 @@ spec:
       ports:
         - protocol: TCP
           port: 5432
+
