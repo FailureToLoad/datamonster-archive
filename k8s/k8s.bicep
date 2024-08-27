@@ -50,7 +50,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-01-01' = {
   name: aksClusterName
   location: location
   dependsOn: [
-    blobContainer 
+    storageContainer 
   ]
   properties: {
     kubernetesVersion: '1.29.0'
