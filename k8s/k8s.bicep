@@ -17,7 +17,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-01-01' = {
   name: aksClusterName
   location: location
   properties: {
-    kubernetesVersion: '1.24.6'
+    kubernetesVersion: '1.29'
     dnsPrefix: 'dmc'
     agentPoolProfiles: [
       {
