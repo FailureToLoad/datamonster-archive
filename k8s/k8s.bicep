@@ -10,19 +10,6 @@ param clientId string
 @description('The client secret of the service principal used by the AKS cluster for authentication to Azure APIs')
 param clientKey string
 
-@description('The principal ID of the service principal used by the AKS cluster for RBAC')
-param principalId string
-
-
-resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(subscription().id, principalId, 'Contributor')
-  scope: resourceGroup()
-  properties: {
-    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
-    principalId: principalId
-  }
-}
-
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-04-01' = {
   name: 'dmclusterstorage'
   location: location
