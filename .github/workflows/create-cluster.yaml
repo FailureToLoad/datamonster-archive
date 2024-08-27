@@ -1,0 +1,45 @@
+name: Create AKS Cluster
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create_aks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy AKS cluster using Bicep
+        run: |
+          az deployment group create \
+            --resource-group datamonster \
+            --template-file k8s/k8s.bicep \
+            --parameters location='westus3' aksClusterName='dm-cluster' kubernetesVersion='1.24.6' dnsPrefix='dmc'
+            - name: Set up Kubernetes context
+        run: |
+          az aks get-credentials --resource-group datamonster --name dm-cluster --overwrite-existing
+
+      - name: Create GHCR secret in AKS
+        run: |
+          kubectl create secret docker-registry ghcr-secret \
+            --docker-server=ghcr.io \
+            --docker-username=${{ secrets.GHCR_USERNAME }} \
+            --docker-password=${{ secrets.GHCR_PAT }} \
+            --docker-email=${{ secrets.GHCR_EMAIL }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy Kubernetes manifests
+        run: |
+          kubectl apply -f k8s/k8s-deployment.yaml
+
+      - name: Verify Deployments
+        run: |
+          kubectl get deployments
+          kubectl get services
