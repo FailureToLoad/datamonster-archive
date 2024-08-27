@@ -1,17 +1,8 @@
-@description('The name of the AKS cluster')
-param aksClusterName string = 'myAksCluster'
-
 @description('The location for all resources.')
 param location string = resourceGroup().location
 
-@description('The Kubernetes version for the AKS cluster.')
-param kubernetesVersion string = '1.24.6'
-
-@description('The DNS prefix for the AKS cluster.')
-param dnsPrefix string = 'myaksdns'
-
-@description('The ID of the principal that will have Contributor role on the AKS cluster.')
-param principalId string
+@description('The name of the AKS cluster')
+param aksClusterName string
 
 @description('The client ID of the service principal used by the AKS cluster for authentication to Azure APIs')
 param clientId string
@@ -19,18 +10,31 @@ param clientId string
 @description('The client secret of the service principal used by the AKS cluster for authentication to Azure APIs')
 param clientKey string
 
-@description('The name of the storage account.')
-param storageAccountName string = 'mystorageaccount'
-
-@description('The name of the storage container.')
-param containerName string = 'mycontainer'
+@description('The principal ID of the service principal used by the AKS cluster for RBAC')
+param principalId string
 
 resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-01-01' = {
   name: aksClusterName
   location: location
   properties: {
-    kubernetesVersion: kubernetesVersion
-    dnsPrefix: dnsPrefix
+    kubernetesVersion: '1.24.6'
+    dnsPrefix: 'dmc'
+    agentPoolProfiles: [
+      {
+        name: 'systemPool'
+        count: 1
+        vmSize: 'Standard_B2s'
+        osType: 'Linux'
+        mode: 'System'
+      }
+      {
+        name: 'userPool'
+        count: 1
+        vmSize: 'Standard_B2s'
+        osType: 'Linux'
+        mode: 'User'
+      }
+    ]
     servicePrincipalProfile: {
       clientId: clientId
       secret: clientKey
@@ -54,7 +58,7 @@ resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-prev
 }
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-04-01' = {
-  name: storageAccountName
+  name: 'dm-cluster-storage'
   location: location
   sku: {
     name: 'Standard_LRS'
@@ -64,12 +68,12 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-04-01' = {
 }
 
 resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2021-04-01' = {
-  name: 'default'
+  name: 'dm-cluster-blob'
   parent: storageAccount
 }
 
 resource storageContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2021-09-01' = {
-  name: containerName
+  name: 'dm-cluster-container'
   parent: blobService
   properties: {
     publicAccess: 'None'

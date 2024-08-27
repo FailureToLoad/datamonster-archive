@@ -21,8 +21,12 @@ jobs:
           az deployment group create \
             --resource-group datamonster \
             --template-file k8s/k8s.bicep \
-            --parameters location='westus3' aksClusterName='dm-cluster' kubernetesVersion='1.24.6' dnsPrefix='dmc' principalId='${{ secrets.AZURE_PRINCIPAL_ID }}' clientId='${{ secrets.CLUSTER_CLIENT_ID }}' clientKey='${{ secrets.CLUSTER_CLIENT_SECRET }}'
-
+            --parameters location='westus3' \
+              aksClusterName='dm-cluster' \
+              clientId='${{ secrets.AZURE_CLIENT_ID }}' \
+              clientSecret='${{ secrets.AZURE_CLIENT_SECRET }}' \
+              principalId='${{ secrets.AZURE_PRINCIPAL_ID }}'
+            
       - name: Set up Kubernetes context
         run: |
           az aks get-credentials --resource-group datamonster --name dm-cluster --overwrite-existing
