@@ -16,6 +16,9 @@ param principalId string
 resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-01-01' = {
   name: aksClusterName
   location: location
+  dependsOn: [
+    blobContainer  // Ensure AKS deployment waits for blob container creation
+  ]
   properties: {
     kubernetesVersion: '1.29.0'
     dnsPrefix: 'dmc'
