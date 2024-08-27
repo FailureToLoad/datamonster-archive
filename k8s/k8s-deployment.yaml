@@ -1,4 +1,3 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,23 +16,23 @@ spec:
     spec:
       containers:
         - name: dm-web
-          image: <web-image-name> # Replace with your web image name
+          image: ghcr.io/failuretoload/datamonster-web:latest
           ports:
             - containerPort: 80
+      imagePullSecrets:
+        - name: ghcr-secret
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: dm-web
 spec:
-  type: LoadBalancer # Change to NodePort if not using a cloud provider
+  type: LoadBalancer # Public-facing service
   selector:
     app: dm-web
   ports:
     - port: 80
       targetPort: 80
-      # Optional: Define a nodePort if using NodePort type
-      # nodePort: 30080
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -53,16 +52,18 @@ spec:
     spec:
       containers:
         - name: dm-api
-          image: <api-image-name> # Replace with your API image name
+          image: ghcr.io/failuretoload/datamonster-api:latest # Replace with your API image name
           ports:
             - containerPort: 8080
+      imagePullSecrets:
+        - name: ghcr-secret
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: dm-api
 spec:
-  type: ClusterIP
+  type: ClusterIP # Internal service
   selector:
     app: dm-api
   ports:
@@ -115,9 +116,47 @@ kind: Service
 metadata:
   name: dm-records
 spec:
-  type: ClusterIP
+  type: ClusterIP # Internal service
   selector:
     app: dm-records
   ports:
     - port: 5432
       targetPort: 5432
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dm-web-to-dm-api
+spec:
+  podSelector:
+    matchLabels:
+      app: dm-api
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: dm-web
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dm-api-to-dm-records
+spec:
+  podSelector:
+    matchLabels:
+      app: dm-records
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: dm-api
+      ports:
+        - protocol: TCP
+          port: 5432
