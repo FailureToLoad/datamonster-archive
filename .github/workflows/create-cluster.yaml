@@ -1,4 +1,4 @@
-name: Create AKS Cluster
+name: create AKS cluster
 
 on:
   workflow_dispatch:
@@ -22,9 +22,10 @@ jobs:
             --resource-group datamonster \
             --template-file k8s/k8s.bicep \
             --parameters location='westus3' aksClusterName='dm-cluster' kubernetesVersion='1.24.6' dnsPrefix='dmc'
-            - name: Set up Kubernetes context
+
+      - name: Set up Kubernetes context
         run: |
-          az aks get-credentials --resource-group datamonster --name dm-cluster --overwrite-existing
+          az aks get-credentials --resource-group <your-resource-group> --name <your-aks-cluster-name> --overwrite-existing
 
       - name: Create GHCR secret in AKS
         run: |
