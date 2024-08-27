@@ -26,8 +26,8 @@ jobs:
                          kubernetesVersion='1.24.6' 
                          dnsPrefix='dmc' 
                          principalId='${{ secrets.AZURE_PRINCIPAL_ID }}'
-                         clientId='${{ secrets.CLUSTER_CLIENT_ID }}' \
-                         clientSecret='${{ secrets.CLUSTER_CLIENT_SECRET }}'
+                         clientId='${{ secrets.CLUSTER_CLIENT_ID }}' 
+                         clientKey='${{ secrets.CLUSTER_CLIENT_SECRET }}'
 
       - name: Set up Kubernetes context
         run: |
