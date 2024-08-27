@@ -13,43 +13,6 @@ param clientKey string
 @description('The principal ID of the service principal used by the AKS cluster for RBAC')
 param principalId string
 
-resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-01-01' = {
-  name: aksClusterName
-  location: location
-  dependsOn: [
-    blobContainer  // Ensure AKS deployment waits for blob container creation
-  ]
-  properties: {
-    kubernetesVersion: '1.29.0'
-    dnsPrefix: 'dmc'
-    agentPoolProfiles: [
-      {
-        name: 'nodepool1'
-        count: 1
-        vmSize: 'Standard_B2s'
-        osType: 'Linux'
-        mode: 'System'
-      }
-      {
-        name: 'nodepool2'
-        count: 1
-        vmSize: 'Standard_B2s'
-        osType: 'Linux'
-        mode: 'User'
-      }
-    ]
-    servicePrincipalProfile: {
-      clientId: clientId
-      secret: clientKey
-    }
-    networkProfile: {
-      networkPlugin: 'azure'
-      serviceCidr: '10.0.0.0/16'
-      dnsServiceIP: '10.0.0.10'
-      podCidr: '10.244.0.0/16'
-    }
-  }
-}
 
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
   name: guid(subscription().id, principalId, 'Contributor')
@@ -80,5 +43,43 @@ resource storageContainer 'Microsoft.Storage/storageAccounts/blobServices/contai
   parent: blobService
   properties: {
     publicAccess: 'None'
+  }
+}
+
+resource aksCluster 'Microsoft.ContainerService/managedClusters@2023-01-01' = {
+  name: aksClusterName
+  location: location
+  dependsOn: [
+    blobContainer 
+  ]
+  properties: {
+    kubernetesVersion: '1.29.0'
+    dnsPrefix: 'dmc'
+    agentPoolProfiles: [
+      {
+        name: 'nodepool1'
+        count: 1
+        vmSize: 'Standard_B2s'
+        osType: 'Linux'
+        mode: 'System'
+      }
+      {
+        name: 'nodepool2'
+        count: 1
+        vmSize: 'Standard_B2s'
+        osType: 'Linux'
+        mode: 'User'
+      }
+    ]
+    servicePrincipalProfile: {
+      clientId: clientId
+      secret: clientKey
+    }
+    networkProfile: {
+      networkPlugin: 'azure'
+      serviceCidr: '10.0.0.0/16'
+      dnsServiceIP: '10.0.0.10'
+      podCidr: '10.244.0.0/16'
+    }
   }
 }
