@@ -38,7 +38,21 @@ jobs:
               aksClusterName='dm-cluster' \
               clientId='${{ secrets.AZURE_CLIENT_ID }}' \
               clientKey='${{ secrets.AZURE_CLIENT_SECRET }}' \
-            
+
+      - name: Retrieve SSL Certificate from Key Vault
+        id: get_certificate
+        run: |
+          az keyvault secret show --vault-name ${{ secrets.KEYVAULT }} --name ${{ secrets.CERT_NAME }} --query value -o tsv > /tmp/cert.pfx
+
+      - name: Configure SSL Certificate in Azure Application Gateway
+        run: |
+          az network application-gateway ssl-cert create \
+            --resource-group datamonster \
+            --gateway-name dm-app-gateway \
+            --name dm-ssl-cert \
+            --cert-file /tmp/cert.pfx \
+            --cert-password ${{ secrets.CERT_PASS }}
+
       - name: Set up Kubernetes context
         run: |
           az aks get-credentials --resource-group datamonster --name dm-cluster --overwrite-existing
