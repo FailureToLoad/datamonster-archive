@@ -10,11 +10,13 @@ import (
 	"os"
 )
 
+type CTXUserID string
+
 const (
-	AuthKey           = "KEY"
-	Connection        = "CONN"
-	ClientURI         = "CLIENT"
-	UserIDKey  string = "userId"
+	AuthKey              = "KEY"
+	Connection           = "CONN"
+	ClientURI            = "CLIENT"
+	UserIDKey  CTXUserID = "userId"
 )
 
 type Settings struct {
