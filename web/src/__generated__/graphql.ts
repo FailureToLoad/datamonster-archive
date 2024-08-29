@@ -130,6 +130,7 @@ export type Query = {
   node?: Maybe<Node>;
   /** Lookup nodes by a list of IDs. */
   nodes: Array<Maybe<Node>>;
+  settlement?: Maybe<Settlement>;
   settlements?: Maybe<Array<Maybe<Settlement>>>;
   survivors?: Maybe<Array<Survivor>>;
 };
@@ -145,8 +146,8 @@ export type QueryNodesArgs = {
 };
 
 
-export type QuerySettlementsArgs = {
-  where?: InputMaybe<SettlementWhereInput>;
+export type QuerySettlementArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
