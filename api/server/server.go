@@ -23,8 +23,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-const UserIdKey string = "userId"
-
 type Server struct {
 	Mux *chi.Mux
 }
@@ -122,7 +120,7 @@ func UserIdExtractor(next http.Handler) http.Handler {
 			Unauthorized(rw, &reason)
 			return
 		}
-		ctx := context.WithValue(req.Context(), UserIdKey, userID)
+		ctx := context.WithValue(req.Context(), config.UserIDKey, userID)
 		next.ServeHTTP(rw, req.WithContext(ctx))
 	})
 }

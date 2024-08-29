@@ -6,11 +6,11 @@ package graph
 
 import (
 	"context"
+	"github.com/failuretoload/datamonster/config"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/failuretoload/datamonster/ent"
 	"github.com/failuretoload/datamonster/ent/settlement"
-	"github.com/failuretoload/datamonster/server"
 )
 
 // CreateSettlement is the resolver for the createSettlement field.
@@ -25,14 +25,14 @@ func (r *mutationResolver) UpdateSettlement(ctx context.Context, id int, input e
 
 // Settlements is the resolver for settlements scoped by user
 func (r *queryResolver) Settlements(ctx context.Context) ([]*ent.Settlement, error) {
-	owner := ctx.Value(server.UserIdKey).(string)
+	owner := ctx.Value(config.UserIDKey).(string)
 	query := r.client.Settlement.Query().Where(settlement.Owner(owner))
 	return query.Order(settlement.ByCurrentYear(sql.OrderDesc())).All(ctx)
 }
 
 // Settlement is the resolver for a single settlement, scoped to a user
 func (r *queryResolver) Settlement(ctx context.Context, id int) (*ent.Settlement, error) {
-	owner := ctx.Value(server.UserIdKey).(string)
+	owner := ctx.Value(config.UserIDKey).(string)
 	return r.client.Settlement.Query().Where(settlement.ID(id)).Where(settlement.Owner(owner)).First(ctx)
 }
 

@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	AuthKey    = "KEY"
-	Connection = "CONN"
-	ClientURI  = "CLIENT"
+	AuthKey           = "KEY"
+	Connection        = "CONN"
+	ClientURI         = "CLIENT"
+	UserIDKey  string = "userId"
 )
 
 type Settings struct {
