@@ -32,7 +32,7 @@ func main() {
 		log.Fatal("opening ent client", schemaErr)
 	}
 
-	app := server.NewServer(client, settings.ClientUri)
+	app := server.NewServer(client, settings.ClientURI)
 
 	app.Run(settings.AuthKey)
 }

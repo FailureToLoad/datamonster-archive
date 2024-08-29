@@ -19,7 +19,7 @@ const (
 type Settings struct {
 	AuthKey    string
 	ConnString string
-	ClientUri  string
+	ClientURI  string
 }
 
 func GetSettings() Settings {
@@ -35,7 +35,7 @@ func settingsFromEnv() Settings {
 	return Settings{
 		AuthKey:    getEnvVar(AuthKey),
 		ConnString: getEnvVar(Connection),
-		ClientUri:  getEnvVar(ClientURI),
+		ClientURI:  getEnvVar(ClientURI),
 	}
 }
 
@@ -64,7 +64,7 @@ func settingsFromVault() Settings {
 		log.Fatalf("failed to get connection: %v", err)
 	}
 	settings.ConnString = *connResp.Value
-	settings.ClientUri = "dm-api"
+	settings.ClientURI = "dm-api"
 	return settings
 }
 
