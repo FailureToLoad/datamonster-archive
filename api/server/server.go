@@ -41,7 +41,7 @@ func NewServer(client *ent.Client, clientURI string) Server {
 		router.Use(SecureOptions())
 		router.Use(CacheControl)
 		router.Use(clerkhttp.WithHeaderAuthorization())
-		router.Use(UserIdExtractor)
+		router.Use(UserIDExtractor)
 	}
 
 	srv := handler.NewDefaultServer(graph.NewSchema(client))
@@ -107,7 +107,7 @@ func CorsHandler(clientURI string) func(http.Handler) http.Handler {
 	return c.Handler
 }
 
-func UserIdExtractor(next http.Handler) http.Handler {
+func UserIDExtractor(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		claims, ok := clerk.SessionClaimsFromContext(req.Context())
 		if !ok {
@@ -134,6 +134,4 @@ func Unauthorized(w http.ResponseWriter, message *string) {
 	w.Header().Set("Content-Type", "application/text")
 	_, _ = w.Write([]byte(content))
 	log.Println(content)
-	return
-
 }
