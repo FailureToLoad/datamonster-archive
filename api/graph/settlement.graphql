@@ -13,5 +13,6 @@ type Mutation {
 }
 
 extend type Query {
-  settlements(where:SettlementWhereInput):[Settlement]
+  settlements:[Settlement]
+  settlement(id:ID!):Settlement
 }

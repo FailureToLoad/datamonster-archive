@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/failuretoload/datamonster/config"
 	"github.com/failuretoload/datamonster/ent"
 	"github.com/failuretoload/datamonster/ent/settlement"
 )
@@ -22,18 +23,17 @@ func (r *mutationResolver) UpdateSettlement(ctx context.Context, id int, input e
 	return ent.FromContext(ctx).Settlement.UpdateOneID(id).SetInput(input).Save(ctx)
 }
 
-// Settlements is the resolver for the settlements field.
-func (r *queryResolver) Settlements(ctx context.Context, where *ent.SettlementWhereInput) ([]*ent.Settlement, error) {
-	query := r.client.Settlement.Query()
-	var err error
-	if where != nil {
-		query, err = where.Filter(query)
-		if err != nil {
-			return nil, err
-		}
-	}
-
+// Settlements is the resolver for settlements scoped by user
+func (r *queryResolver) Settlements(ctx context.Context) ([]*ent.Settlement, error) {
+	owner := ctx.Value(config.UserIDKey).(string)
+	query := r.client.Settlement.Query().Where(settlement.Owner(owner))
 	return query.Order(settlement.ByCurrentYear(sql.OrderDesc())).All(ctx)
+}
+
+// Settlement is the resolver for a single settlement, scoped to a user
+func (r *queryResolver) Settlement(ctx context.Context, id int) (*ent.Settlement, error) {
+	owner := ctx.Value(config.UserIDKey).(string)
+	return r.client.Settlement.Query().Where(settlement.ID(id)).Where(settlement.Owner(owner)).First(ctx)
 }
 
 // CreateSurvivors is the resolver for the createSurvivors field.
