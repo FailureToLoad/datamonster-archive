@@ -6,9 +6,9 @@ package graph
 
 import (
 	"context"
-	"github.com/failuretoload/datamonster/config"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/failuretoload/datamonster/config"
 	"github.com/failuretoload/datamonster/ent"
 	"github.com/failuretoload/datamonster/ent/settlement"
 )
