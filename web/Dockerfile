@@ -6,10 +6,12 @@ COPY package.json ./
 RUN npm install
 
 ENV PATH /app/node_modules/.bin:$PATH
+ENV VITE_PORT=80
+ENV VITE_CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY}
 
 COPY . .
 
-RUN npm run build-staging
+RUN npm run build
 
 FROM nginx:1.27-alpine3.19
 
