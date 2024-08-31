@@ -1,4 +1,4 @@
-name: update azure
+name: Update Azure Web Apps
 
 on:
   push:
@@ -7,6 +7,18 @@ on:
     paths:
       - "web/**"
       - "api/**"
+  workflow_dispatch:
+    inputs:
+      deploy_web:
+        description: 'Deploy Web App'
+        required: true
+        type: boolean
+        default: false
+      deploy_api:
+        description: 'Deploy API App'
+        required: true
+        type: boolean
+        default: false
 
 jobs:
   build_and_push_images:
@@ -20,6 +32,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Determine Changed Files
+      if: github.event_name == 'push'
       id: changes
       run: |
         git fetch origin main
@@ -30,8 +43,13 @@ jobs:
       run: |
         WEB_CHANGED=false
         API_CHANGED=false
-        if grep -q '^web/' changed_files.txt; then WEB_CHANGED=true; fi
-        if grep -q '^api/' changed_files.txt; then API_CHANGED=true; fi
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          WEB_CHANGED=${{ github.event.inputs.deploy_web }}
+          API_CHANGED=${{ github.event.inputs.deploy_api }}
+        elif [[ "${{ github.event_name }}" == "push" ]]; then
+          if grep -q '^web/' changed_files.txt; then WEB_CHANGED=true; fi
+          if grep -q '^api/' changed_files.txt; then API_CHANGED=true; fi
+        fi
         echo "WEB_CHANGED=${WEB_CHANGED}" >> $GITHUB_OUTPUT
         echo "API_CHANGED=${API_CHANGED}" >> $GITHUB_OUTPUT
 
