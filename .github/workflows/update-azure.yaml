@@ -68,13 +68,20 @@ jobs:
     - name: Build and Push Web Image
       if: ${{ steps.set-outputs.outputs.WEB_CHANGED == 'true' }}
       run: |
-        docker build -t ghcr.io/failuretoload/datamonster-web:${{ github.sha }} ./web
+        docker build \
+          --build-arg CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY }} \
+          -t ghcr.io/failuretoload/datamonster-web:${{ github.sha }} ./web
         docker push ghcr.io/failuretoload/datamonster-web:${{ github.sha }}
 
     - name: Build and Push API Image
       if: ${{ steps.set-outputs.outputs.API_CHANGED == 'true' }}
       run: |
-        docker build -t ghcr.io/failuretoload/datamonster-api:${{ github.sha }} ./api
+        docker build \
+          --build-arg AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }} \
+          --build-arg AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }} \
+          --build-arg AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }} \
+          --build-arg VAULT_URI=${{ secrets.VAULT_URI }} \
+          -t ghcr.io/failuretoload/datamonster-api:${{ github.sha }} ./api
         docker push ghcr.io/failuretoload/datamonster-api:${{ github.sha }}
 
   update_azure_web_apps:
