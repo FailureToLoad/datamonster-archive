@@ -92,7 +92,7 @@ jobs:
     - name: Log in to Azure
       uses: azure/login@v1
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        creds: ${{ secrets.DATAMONSTER_ACTIONS }}
 
     - name: Update Web App
       if: ${{ needs.build_and_push_images.outputs.WEB_CHANGED == 'true' }}
