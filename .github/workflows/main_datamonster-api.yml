@@ -33,7 +33,7 @@ jobs:
         with:
           push: true
           tags: ghcr.io/${{ secrets.AzureAppService_ContainerUsername_63dbecb6e8274e4c90b100775179a996 }}/datamonster-api:${{ github.sha }}
-          file: ./api/Dockerfile
+          context: ./api
           build-args: |
             AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }} \
             AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }} \
