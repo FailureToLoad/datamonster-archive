@@ -2,6 +2,10 @@ package main
 
 import (
 	"context"
+	"log"
+	"net/http"
+	"time"
+
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -12,9 +16,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/unrolled/secure"
-	"log"
-	"net/http"
-	"time"
 
 	"entgo.io/ent/dialect"
 	"github.com/failuretoload/datamonster/config"
@@ -88,8 +89,13 @@ func (s Server) Handle(route string, handler http.Handler) {
 
 func (s Server) Run(authKey string) {
 	clerk.SetKey(authKey)
-	log.Default().Println("Starting server on port 8080")
-	err := http.ListenAndServe("0.0.0.0:8080", s.Mux)
+	port := "0.0.0.0:8080"
+	if config.Mode() == "prod" {
+		port = "0.0.0.0:80"
+	}
+
+	log.Default().Println("Starting server on ", port)
+	err := http.ListenAndServe(port, s.Mux)
 	if err != nil {
 		log.Default().Fatal(err)
 	}
