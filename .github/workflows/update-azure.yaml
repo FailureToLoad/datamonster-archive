@@ -97,12 +97,12 @@ jobs:
       - name: Configure datamonster-web
         if: ${{ needs.build_and_push_images.outputs.WEB_CHANGED == 'true' }}
         run: |
-          az webapp config appsettings set --name datamonster-web --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --settings DOCKER_REGISTRY_SERVER_URL=https://ghcr.io DOCKER_REGISTRY_SERVER_USERNAME=${{ secrets.GHCR_USERNAME }} DOCKER_REGISTRY_SERVER_PASSWORD=${{ secrets.GHCR_READ }}
+          az webapp config appsettings set --name datamonster-web --resource-group datamonster --settings DOCKER_REGISTRY_SERVER_URL=https://ghcr.io DOCKER_REGISTRY_SERVER_USERNAME=${{ secrets.GHCR_USERNAME }} DOCKER_REGISTRY_SERVER_PASSWORD=${{ secrets.GHCR_READ }}
 
       - name: Configure datamonster-api
         if: ${{ needs.build_and_push_images.outputs.WEB_CHANGED == 'true' }}
         run: |
-          az webapp config appsettings set --name datamonster-api --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --settings DOCKER_REGISTRY_SERVER_URL=https://ghcr.io DOCKER_REGISTRY_SERVER_USERNAME=${{ secrets.GHCR_USERNAME }} DOCKER_REGISTRY_SERVER_PASSWORD=${{ secrets.GHCR_READ }}
+          az webapp config appsettings set --name datamonster-api --resource-group datamonster --settings DOCKER_REGISTRY_SERVER_URL=https://ghcr.io DOCKER_REGISTRY_SERVER_USERNAME=${{ secrets.GHCR_USERNAME }} DOCKER_REGISTRY_SERVER_PASSWORD=${{ secrets.GHCR_READ }}
 
       - name: Update datamonster-api
         if: ${{ needs.build_and_push_images.outputs.API_CHANGED == 'true' }}
