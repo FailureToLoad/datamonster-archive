@@ -44,7 +44,7 @@ func main() {
 		log.Fatal("opening ent client", schemaErr)
 	}
 
-	app := NewServer(client, settings.ClientURI)
+	app := NewServer(client)
 
 	app.Run(settings.AuthKey)
 }
@@ -53,7 +53,7 @@ type Server struct {
 	Mux *chi.Mux
 }
 
-func NewServer(client *ent.Client, clientURI string) Server {
+func NewServer(client *ent.Client) Server {
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
@@ -61,7 +61,7 @@ func NewServer(client *ent.Client, clientURI string) Server {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 	router.Use(middleware.Timeout(10 * time.Second))
-	router.Use(CorsHandler(clientURI))
+	router.Use(CorsHandler())
 	mode := config.Mode()
 	if mode != "schema" {
 		router.Use(SecureOptions())
@@ -127,9 +127,9 @@ func CacheControl(next http.Handler) http.Handler {
 	})
 }
 
-func CorsHandler(clientURI string) func(http.Handler) http.Handler {
+func CorsHandler() func(http.Handler) http.Handler {
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{clientURI},
+		AllowedOrigins:   []string{"https://data-monster.net", "http://datamonster-web.azurewebsites.net", "https://datamonster-web.azurewebsites.net"},
 		AllowedMethods:   []string{"HEAD", "GET", "POST", "OPTIONS"},
 		AllowedHeaders:   []string{"Origin", "Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		AllowCredentials: true,
