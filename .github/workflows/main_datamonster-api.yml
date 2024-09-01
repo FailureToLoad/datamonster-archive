@@ -32,7 +32,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: ghcr.io/${{ secrets.AzureAppService_ContainerUsername_63dbecb6e8274e4c90b100775179a996 }}/datamonster-api:${{ github.sha }}
+          tags: ghcr.io/failuretoload/datamonster-api:latest
           context: ./api
           build-args: |
             AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }} \
@@ -55,4 +55,4 @@ jobs:
           app-name: "datamonster-api"
           slot-name: "production"
           publish-profile: ${{ secrets.AzureAppService_PublishProfile_190ce78545a24657bf289885e98d9b6a }}
-          images: "ghcr.io/${{ secrets.AzureAppService_ContainerUsername_63dbecb6e8274e4c90b100775179a996 }}/datamonster-api:${{ github.sha }}"
+          images: "ghcr.io/${{ secrets.AzureAppService_ContainerUsername_63dbecb6e8274e4c90b100775179a996 }}/datamonster-api:latest"
