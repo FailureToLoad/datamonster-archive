@@ -41,3 +41,4 @@ jobs:
           context: ./web
           build-args: |
             CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY }}
+            API_HOST=${{ secrets.API_HOST }}
