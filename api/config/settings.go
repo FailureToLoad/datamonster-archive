@@ -27,7 +27,7 @@ type Settings struct {
 
 func GetSettings() Settings {
 	mode := Mode()
-	if mode == "cluster" {
+	if mode == "prod" {
 		return settingsFromVault()
 	}
 
