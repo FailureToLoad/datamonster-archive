@@ -1,6 +1,6 @@
 # File ./Dockerfile
 FROM node:22.7-alpine3.19 AS build
-
+ARG CLERK_PUBLISHABLE_KEY
 WORKDIR /app
 COPY package.json ./
 RUN npm install
