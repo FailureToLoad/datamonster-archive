@@ -51,5 +51,5 @@ jobs:
         with:
           app-name: "datamonster-web"
           slot-name: "production"
-          publish-profile: ${{ secrets.AzureAppService_PublishProfile_424ce9039ef745ae8bac55b427d3268a }}
+          publish-profile: ${{ secrets.DATAMONSTER_WEB_PUBLISH }}
           images: "ghcr.io/failuretoload/datamonster-web:${{ github.sha }}"
