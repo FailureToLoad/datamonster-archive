@@ -1,12 +1,13 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy container app to Azure Web App - datamonster-api
+name: deploy datamonster-api
 
 on:
-  push:
     branches:
       - main
+    paths:
+      - "api/**"
   workflow_dispatch:
 
 jobs:
@@ -31,7 +32,12 @@ jobs:
       with:
         push: true
         tags: ghcr.io/${{ secrets.AzureAppService_ContainerUsername_63dbecb6e8274e4c90b100775179a996 }}/datamonster-api:${{ github.sha }}
-        file: ./Dockerfile
+        file: ./api/Dockerfile
+        build-args: |
+          AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }} \
+          AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }} \
+          AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }} \
+          VAULT_URI=${{ secrets.VAULT_URI }} \
 
   deploy:
     runs-on: ubuntu-latest

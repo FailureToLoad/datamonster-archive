@@ -1,4 +1,4 @@
-name: azure deploy
+name: deploy datamonster-web
 
 on:
   push:
@@ -32,7 +32,7 @@ jobs:
           tags: ghcr.io/failuretoload/datamonster-web:${{ github.sha }}
           file: ./web/Dockerfile
           build-args: |
-          CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY }}
+            CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY }}
 
   deploy:
     runs-on: ubuntu-latest
