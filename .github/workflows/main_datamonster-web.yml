@@ -22,8 +22,8 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: https://ghcr.io/
-          username: ${{ secrets.AzureAppService_ContainerUsername_405630d2437c435d9d80ce002dc6800d }}
-          password: ${{ secrets.AzureAppService_ContainerPassword_eb84a109f2b345cf87e84a18051679ee }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: build and publish datamonster-web
         uses: docker/build-push-action@v3
