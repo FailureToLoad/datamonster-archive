@@ -37,7 +37,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: ${{ secrets.ACR_LOGIN_SERVER }}/datamonster-web:latest
+          tags: ${{ secrets.ACR_LOGIN_SERVER }}/datamonster-web:latest2
           context: ./web
           build-args: |
             CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY }}
