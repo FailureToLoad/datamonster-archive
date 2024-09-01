@@ -4,6 +4,7 @@
 name: deploy datamonster-api
 
 on:
+  push:
     branches:
       - main
     paths:
