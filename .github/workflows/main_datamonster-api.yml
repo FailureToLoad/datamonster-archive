@@ -34,7 +34,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: ${{ secrets.ACR_LOGIN_SERVER }}/datamonster-api:latest
+          tags: ${{ secrets.ACR_LOGIN_SERVER }}/datamonster-api:latest2
           context: ./api
           build-args: |
             AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}
