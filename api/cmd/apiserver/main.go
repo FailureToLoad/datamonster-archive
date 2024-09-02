@@ -24,6 +24,10 @@ import (
 	_ "github.com/lib/pq"
 )
 
+var (
+	ready = false
+)
+
 func main() {
 
 	client, err := ent.Open(dialect.Postgres, config.PGConn())
@@ -55,26 +59,52 @@ func NewServer(client *ent.Client) Server {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 	router.Use(middleware.Timeout(10 * time.Second))
-	router.Use(CorsHandler())
-	mode := config.Mode()
-	if mode != "schema" {
-		router.Use(SecureOptions())
-		router.Use(CacheControl)
-		router.Use(clerkhttp.WithHeaderAuthorization())
-		router.Use(UserIDExtractor)
-	}
 
-	srv := handler.NewDefaultServer(graph.NewSchema(client))
-	srv.Use(entgql.Transactioner{TxOpener: client})
-	router.Handle("/graphql", srv)
+	mode := config.Mode()
 	if mode == "schema" {
 		router.Handle("/",
 			playground.Handler("Datamonster.gql", "/graphql"),
 		)
 	}
+	router.Get("/heartbeat", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	router.Get("/startup", func(w http.ResponseWriter, r *http.Request) {
+		if !ready {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			_, _ = w.Write([]byte("api is not ready"))
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ready"))
+	})
+
+	srv := handler.NewDefaultServer(graph.NewSchema(client))
+	srv.Use(entgql.Transactioner{TxOpener: client})
+	router.Mount("/graphql", graphqlRouter(mode, srv))
+
 	return Server{
 		Mux: router,
 	}
+}
+
+func graphqlRouter(mode string, srv *handler.Server) http.Handler {
+	r := chi.NewRouter()
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.URLFormat)
+	r.Use(middleware.Timeout(10 * time.Second))
+	r.Use(CorsHandler())
+	if mode != "schema" {
+		r.Use(SecureOptions())
+		r.Use(CacheControl)
+		r.Use(clerkhttp.WithHeaderAuthorization())
+		r.Use(UserIDExtractor)
+	}
+	r.Handle("/", srv)
+	return r
 }
 
 func (s Server) Handle(route string, handler http.Handler) {
@@ -87,7 +117,7 @@ func (s Server) Run() {
 	if config.Mode() == "prod" {
 		port = "0.0.0.0:80"
 	}
-
+	ready = true
 	log.Default().Println("Starting server on ", port)
 	err := http.ListenAndServe(port, s.Mux)
 	if err != nil {
