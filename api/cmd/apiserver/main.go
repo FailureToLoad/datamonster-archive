@@ -129,7 +129,7 @@ func CacheControl(next http.Handler) http.Handler {
 
 func CorsHandler() func(http.Handler) http.Handler {
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"https://data-monster.net", "http://datamonster-web.azurewebsites.net", "https://datamonster-web.azurewebsites.net"},
+		AllowedOrigins:   []string{"https://data-monster.net", "http://datamonster-web"},
 		AllowedMethods:   []string{"HEAD", "GET", "POST", "OPTIONS"},
 		AllowedHeaders:   []string{"Origin", "Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		AllowCredentials: true,

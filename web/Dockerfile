@@ -7,7 +7,7 @@ COPY package.json ./
 RUN npm install
 
 ENV PATH /app/node_modules/.bin:$PATH
-ENV VITE_PORT=3000
+ENV VITE_PORT=80
 ENV VITE_CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY}
 
 COPY . .
@@ -19,6 +19,6 @@ FROM nginx:1.27-alpine3.19
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /var/www/html/
 
-EXPOSE 3000
+EXPOSE 80
 
 ENTRYPOINT ["nginx","-g","daemon off;"]
