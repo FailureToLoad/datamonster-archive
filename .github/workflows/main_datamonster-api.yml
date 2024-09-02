@@ -36,8 +36,3 @@ jobs:
           push: true
           tags: ${{ secrets.ACR_LOGIN_SERVER }}/datamonster-api:latest
           context: ./api
-          build-args: |
-            AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}
-            AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}
-            AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}
-            VAULT_URI=${{ secrets.VAULT_URI }}

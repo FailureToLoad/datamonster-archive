@@ -24,15 +24,9 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var settings config.Settings
-
-func init() {
-	settings = config.GetSettings()
-}
-
 func main() {
 
-	client, err := ent.Open(dialect.Postgres, settings.ConnString)
+	client, err := ent.Open(dialect.Postgres, config.PGConn())
 	if err != nil {
 		log.Fatal("opening ent client", err)
 	}
@@ -40,13 +34,13 @@ func main() {
 		context.Background(),
 		migrate.WithGlobalUniqueID(true),
 	); schemaErr != nil {
-		log.Println("db url", settings.ConnString)
+		log.Println("db url", config.PGConn())
 		log.Fatal("opening ent client", schemaErr)
 	}
 
 	app := NewServer(client)
 
-	app.Run(settings.AuthKey)
+	app.Run()
 }
 
 type Server struct {
@@ -87,8 +81,8 @@ func (s Server) Handle(route string, handler http.Handler) {
 	s.Mux.Handle(route, handler)
 }
 
-func (s Server) Run(authKey string) {
-	clerk.SetKey(authKey)
+func (s Server) Run() {
+	clerk.SetKey(config.Key())
 	port := "0.0.0.0:8080"
 	if config.Mode() == "prod" {
 		port = "0.0.0.0:80"
