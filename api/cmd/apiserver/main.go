@@ -79,6 +79,16 @@ func NewServer(client *ent.Client) Server {
 		_, _ = w.Write([]byte("ready"))
 	})
 
+	router.Get("/ready", func(w http.ResponseWriter, r *http.Request) {
+		if !ready {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			_, _ = w.Write([]byte("api is not ready"))
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ready"))
+	})
+
 	srv := handler.NewDefaultServer(graph.NewSchema(client))
 	srv.Use(entgql.Transactioner{TxOpener: client})
 	router.Mount("/graphql", graphqlRouter(mode, srv))
