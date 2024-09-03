@@ -16,8 +16,7 @@ RUN npm run build
 
 FROM node:14-alpine
 WORKDIR /app
-COPY --from=build-stage /app/dist .
+COPY --from=build /app/dist .
 RUN npm install -g serve
 EXPOSE 80
 CMD ["serve", "-s", ".", "-l", "80"]
-

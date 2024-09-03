@@ -1,6 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: deploy datamonster-web
 
 on:
@@ -16,7 +13,7 @@ jobs:
     runs-on: "ubuntu-latest"
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -27,17 +24,18 @@ jobs:
           creds: ${{ secrets.DATAMONSTER_ACTIONS }}
 
       - name: Log in to Azure Container Registry
-        uses: azure/docker-login@v1
+        uses: docker/login-action@v2
         with:
-          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      - name: build and publish datamonster-web
-        uses: docker/build-push-action@v3
+      - name: Build and push datamonster-web
+        uses: docker/build-push-action@v4
         with:
           push: true
           tags: ${{ secrets.ACR_LOGIN_SERVER }}/datamonster-web:latest
           context: ./web
+          file: ./web/Dockerfile
           build-args: |
             CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY }}
