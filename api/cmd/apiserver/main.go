@@ -123,13 +123,9 @@ func (s Server) Handle(route string, handler http.Handler) {
 
 func (s Server) Run() {
 	clerk.SetKey(config.Key())
-	port := "0.0.0.0:8080"
-	if config.Mode() == "prod" {
-		port = "0.0.0.0:80"
-	}
 	ready = true
-	log.Default().Println("Starting server on ", port)
-	err := http.ListenAndServe(port, s.Mux)
+	log.Default().Println("Starting server on :8080")
+	err := http.ListenAndServe(":8080", s.Mux)
 	if err != nil {
 		log.Default().Fatal(err)
 	}
@@ -163,7 +159,7 @@ func CacheControl(next http.Handler) http.Handler {
 
 func CorsHandler() func(http.Handler) http.Handler {
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"https://data-monster.net", "http://datamonster-web"},
+		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"HEAD", "GET", "POST", "OPTIONS"},
 		AllowedHeaders:   []string{"Origin", "Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		AllowCredentials: true,
