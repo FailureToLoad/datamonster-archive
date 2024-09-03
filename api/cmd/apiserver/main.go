@@ -30,6 +30,7 @@ var (
 
 func main() {
 
+	log.Println("opening db connection")
 	client, err := ent.Open(dialect.Postgres, config.PGConn())
 	if err != nil {
 		log.Fatal("opening ent client", err)
