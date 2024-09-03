@@ -14,11 +14,10 @@ COPY . .
 
 RUN npm run build
 
-FROM nginx:1.27-alpine3.19
-
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist /var/www/html/
-
+FROM node:14-alpine
+WORKDIR /app
+COPY --from=build-stage /app/dist .
+RUN npm install -g serve
 EXPOSE 80
+CMD ["serve", "-s", ".", "-l", "80"]
 
-ENTRYPOINT ["nginx","-g","daemon off;"]
