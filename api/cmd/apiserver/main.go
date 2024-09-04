@@ -125,8 +125,8 @@ func (s Server) Handle(route string, handler http.Handler) {
 func (s Server) Run() {
 	clerk.SetKey(config.Key())
 	ready = true
-	log.Default().Println("Starting server on :80")
-	err := http.ListenAndServe(":80", s.Mux)
+	log.Default().Println("Starting server on 0.0.0.0:8080")
+	err := http.ListenAndServe("0.0.0.0:8080", s.Mux)
 	if err != nil {
 		log.Default().Fatal(err)
 	}
