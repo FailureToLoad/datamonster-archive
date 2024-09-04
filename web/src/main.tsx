@@ -6,7 +6,6 @@ import RootLayout from '@/components/root-layout';
 
 import IndexPage from '@/routes';
 import SignInPage from '@/routes/signin';
-import SignUpPage from '@/routes/signup';
 import ProtectedLayout from '@/components/protected-layout';
 import SettlementsPage from '@/routes/settlements/index.tsx';
 
@@ -23,7 +22,6 @@ const router = createBrowserRouter([
     children: [
       {path: '/', element: <IndexPage />},
       {path: '/signin/*', element: <SignInPage />},
-      {path: '/signup/*', element: <SignUpPage />},
       {
         element: <ProtectedLayout />,
         children: [
