@@ -1,0 +1,33 @@
+{
+    auto_https off
+}
+:80 {
+    # CORS
+    header Access-Control-Allow-Origin "*"
+    header Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    header Access-Control-Allow-Headers "Origin, Content-Type, Accept, Authorization"
+    header Access-Control-Max-Age "3600"
+
+    @options {
+        method OPTIONS
+    }
+   
+    handle /graphql* {
+        reverse_proxy http://localhost:8080 {
+            header_up Host {http.reverse_proxy.upstream.hostport}
+        }
+    }
+
+   
+    handle {
+        reverse_proxy http://localhost:8090 {
+            header_up Host {http.reverse_proxy.upstream.hostport}
+        }
+    }
+
+
+    log {
+        output stdout
+        format console
+    }
+}
