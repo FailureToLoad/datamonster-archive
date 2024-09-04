@@ -1,9 +1,9 @@
-import { useUser, SignInButton } from "@clerk/clerk-react";
-import Spinner from "@/components/ui/spinner";
-import { Navigate } from "react-router-dom";
+import {useUser} from '@clerk/clerk-react';
+import Spinner from '@/components/ui/spinner';
+import {Link, Navigate} from 'react-router-dom';
 
 export default function Home() {
-  const { isLoaded, user } = useUser();
+  const {isLoaded, user} = useUser();
   if (!isLoaded) {
     return <Spinner />;
   }
@@ -15,7 +15,7 @@ export default function Home() {
       <h1 className="mb-4 text-5xl font-extrabold leading-none tracking-tight ">
         Datamonster
       </h1>
-      <SignInButton />
+      <Link to="/signin">Sign In</Link>
     </>
   );
 }
