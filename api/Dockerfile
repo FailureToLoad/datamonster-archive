@@ -17,7 +17,7 @@ WORKDIR /
 COPY --from=build-stage /out/apiserver /apiserver
 USER nonroot:nonroot
 
-EXPOSE 8080
+EXPOSE 80
 
 ENV MODE=prod
 
