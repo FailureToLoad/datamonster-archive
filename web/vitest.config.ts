@@ -1,18 +1,13 @@
-import {defineConfig} from 'vitest/config';
-import path from 'path';
-import react from '@vitejs/plugin-react-swc';
+import {defineConfig, mergeConfig} from 'vitest/config';
+import viteConfig from './vite.config';
 
-export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@types': path.resolve(__dirname, './src/__generated__/graphql'),
+export default mergeConfig(
+  viteConfig,
+  defineConfig({
+    test: {
+      environment: 'jsdom',
+      clearMocks: true,
+      setupFiles: ['./vitest.setup.ts'],
     },
-  },
-  server: {
-    host: '0.0.0.0',
-    strictPort: true,
-    port: Number(8090),
-  },
-});
+  })
+);
