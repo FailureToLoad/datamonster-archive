@@ -27,6 +27,7 @@ import {
   ContextMenuContent,
 } from '@/components/ui/context-menu';
 import DeleteDialog from './deleteDialog';
+import StatusDialog from './statusDialog';
 
 interface DataTableProps<Survivor> {
   data: Survivor[];
@@ -36,6 +37,7 @@ export function SurvivorTable<TData extends Survivor>({
   data,
 }: DataTableProps<TData>) {
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [statusOpen, setStatusOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     born: false,
@@ -72,6 +74,11 @@ export function SurvivorTable<TData extends Survivor>({
   const deleteSurvivor = (survivor: Survivor) => {
     setCurrentSurvivor(survivor);
     setDeleteOpen(true);
+  };
+
+  const setSurvivorStatus = (survivor: Survivor) => {
+    setCurrentSurvivor(survivor);
+    setStatusOpen(true);
   };
 
   return (
@@ -123,7 +130,10 @@ export function SurvivorTable<TData extends Survivor>({
                     >
                       View
                     </ContextMenuItem>
-                    <ContextMenuItem className="w-full">
+                    <ContextMenuItem
+                      onSelect={() => setSurvivorStatus(row.original)}
+                      className="w-full"
+                    >
                       Set Status
                     </ContextMenuItem>
                     <ContextMenuItem
@@ -149,6 +159,7 @@ export function SurvivorTable<TData extends Survivor>({
         </Table>
       </div>
       <DeleteDialog open={deleteOpen} setOpen={setDeleteOpen} />
+      <StatusDialog open={statusOpen} setOpen={setStatusOpen} />
     </div>
   );
 }
