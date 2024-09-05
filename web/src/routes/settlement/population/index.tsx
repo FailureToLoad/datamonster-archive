@@ -55,7 +55,7 @@ export default function PopulationTab() {
   const population = data?.survivors as Array<Survivor>;
   return (
     <div id="population" className="max-w-fit py-4">
-      <div className="flex items-center py-4">
+      <div className="flex flex-row-reverse items-center py-4">
         <NewSurvivorDialog settlementId={settlementId} afterSubmit={refetch} />
       </div>
       <SurvivorTable data={population} />

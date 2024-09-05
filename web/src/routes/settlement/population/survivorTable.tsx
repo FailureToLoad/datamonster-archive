@@ -17,10 +17,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {Button} from '@/components/ui/button';
 import {useContext, useState} from 'react';
 import {Survivor} from '@types';
 import {PopulationContext} from '@/components/context/populationContext';
+import {
+  ContextMenu,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  ContextMenuContent,
+} from '@/components/ui/context-menu';
+import DeleteDialog from './deleteDialog';
 
 interface DataTableProps<Survivor> {
   data: Survivor[];
@@ -29,6 +35,7 @@ interface DataTableProps<Survivor> {
 export function SurvivorTable<TData extends Survivor>({
   data,
 }: DataTableProps<TData>) {
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     born: false,
@@ -62,6 +69,11 @@ export function SurvivorTable<TData extends Survivor>({
     setDialogOpen(true);
   };
 
+  const deleteSurvivor = (survivor: Survivor) => {
+    setCurrentSurvivor(survivor);
+    setDeleteOpen(true);
+  };
+
   return (
     <div>
       <div className="rounded-md border">
@@ -88,20 +100,40 @@ export function SurvivorTable<TData extends Survivor>({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  onClick={() => viewSurvivor(row.original)}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="text-center">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
+                <ContextMenu key={row.id}>
+                  <ContextMenuTrigger asChild>
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && 'selected'}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id} className="text-center">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </ContextMenuTrigger>
+                  <ContextMenuContent className="min-w-24 flex flex-col items-start bg-background border border-b-2">
+                    <ContextMenuItem
+                      onSelect={() => viewSurvivor(row.original)}
+                      className="w-full"
+                    >
+                      View
+                    </ContextMenuItem>
+                    <ContextMenuItem className="w-full">
+                      Set Status
+                    </ContextMenuItem>
+                    <ContextMenuItem
+                      onSelect={() => deleteSurvivor(row.original)}
+                      className="w-full"
+                    >
+                      Delete
+                    </ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
               ))
             ) : (
               <TableRow>
@@ -116,24 +148,7 @@ export function SurvivorTable<TData extends Survivor>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
-      </div>
+      <DeleteDialog open={deleteOpen} setOpen={setDeleteOpen} />
     </div>
   );
 }
