@@ -35,6 +35,8 @@ input CreateSurvivorInput {
   lumi: Int
   courage: Int
   understanding: Int
+  status: SurvivorStatus
+  statusChangeYear: Int
   settlementID: ID
 }
 """
@@ -261,6 +263,8 @@ type Survivor implements Node {
   lumi: Int!
   courage: Int!
   understanding: Int!
+  status: SurvivorStatus!
+  statusChangeYear: Int!
   settlementID: ID
   settlement: Settlement
 }
@@ -305,7 +309,19 @@ enum SurvivorOrderField {
   LUMI
   CURRENCY
   UNDERSTANDING
+  STATUS
+  STATUS_CHANGE_YEAR
   SETTLEMENTID
+}
+"""
+SurvivorStatus is enum for the field status
+"""
+enum SurvivorStatus @goModel(model: "github.com/failuretoload/datamonster/ent/survivor.Status") {
+  alive
+  dead
+  ceased_to_exist
+  retired
+  skip_hunt
 }
 """
 SurvivorWhereInput is used for filtering Survivor objects.
@@ -515,6 +531,24 @@ input SurvivorWhereInput {
   understandingLT: Int
   understandingLTE: Int
   """
+  status field predicates
+  """
+  status: SurvivorStatus
+  statusNEQ: SurvivorStatus
+  statusIn: [SurvivorStatus!]
+  statusNotIn: [SurvivorStatus!]
+  """
+  status_change_year field predicates
+  """
+  statusChangeYear: Int
+  statusChangeYearNEQ: Int
+  statusChangeYearIn: [Int!]
+  statusChangeYearNotIn: [Int!]
+  statusChangeYearGT: Int
+  statusChangeYearGTE: Int
+  statusChangeYearLT: Int
+  statusChangeYearLTE: Int
+  """
   settlement_id field predicates
   """
   settlementID: ID
@@ -566,6 +600,8 @@ input UpdateSurvivorInput {
   lumi: Int
   courage: Int
   understanding: Int
+  status: SurvivorStatus
+  statusChangeYear: Int
   settlementID: ID
   clearSettlement: Boolean
 }

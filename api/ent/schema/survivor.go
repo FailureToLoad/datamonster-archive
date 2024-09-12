@@ -32,6 +32,8 @@ func (Survivor) Fields() []ent.Field {
 		field.Int("lumi").Min(0).Default(0).Annotations(entgql.OrderField("LUMI")),
 		field.Int("courage").Min(0).Max(9).Default(0).Annotations(entgql.OrderField("CURRENCY")),
 		field.Int("understanding").Min(0).Max(9).Default(0).Annotations(entgql.OrderField("UNDERSTANDING")),
+		field.Enum("status").Values("alive", "dead", "ceased_to_exist", "retired", "skip_hunt").Default("alive").Annotations(entgql.OrderField("STATUS")),
+		field.Int("status_change_year").Default(0).Annotations(entgql.OrderField("STATUS_CHANGE_YEAR")),
 		field.Int("settlement_id").Optional().Annotations(entgql.OrderField("SETTLEMENTID")),
 	}
 }

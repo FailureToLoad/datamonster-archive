@@ -250,6 +250,34 @@ func (sc *SurvivorCreate) SetNillableUnderstanding(i *int) *SurvivorCreate {
 	return sc
 }
 
+// SetStatus sets the "status" field.
+func (sc *SurvivorCreate) SetStatus(s survivor.Status) *SurvivorCreate {
+	sc.mutation.SetStatus(s)
+	return sc
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (sc *SurvivorCreate) SetNillableStatus(s *survivor.Status) *SurvivorCreate {
+	if s != nil {
+		sc.SetStatus(*s)
+	}
+	return sc
+}
+
+// SetStatusChangeYear sets the "status_change_year" field.
+func (sc *SurvivorCreate) SetStatusChangeYear(i int) *SurvivorCreate {
+	sc.mutation.SetStatusChangeYear(i)
+	return sc
+}
+
+// SetNillableStatusChangeYear sets the "status_change_year" field if the given value is not nil.
+func (sc *SurvivorCreate) SetNillableStatusChangeYear(i *int) *SurvivorCreate {
+	if i != nil {
+		sc.SetStatusChangeYear(*i)
+	}
+	return sc
+}
+
 // SetSettlementID sets the "settlement_id" field.
 func (sc *SurvivorCreate) SetSettlementID(i int) *SurvivorCreate {
 	sc.mutation.SetSettlementID(i)
@@ -367,6 +395,14 @@ func (sc *SurvivorCreate) defaults() {
 	if _, ok := sc.mutation.Understanding(); !ok {
 		v := survivor.DefaultUnderstanding
 		sc.mutation.SetUnderstanding(v)
+	}
+	if _, ok := sc.mutation.Status(); !ok {
+		v := survivor.DefaultStatus
+		sc.mutation.SetStatus(v)
+	}
+	if _, ok := sc.mutation.StatusChangeYear(); !ok {
+		v := survivor.DefaultStatusChangeYear
+		sc.mutation.SetStatusChangeYear(v)
 	}
 }
 
@@ -508,6 +544,17 @@ func (sc *SurvivorCreate) check() error {
 			return &ValidationError{Name: "understanding", err: fmt.Errorf(`ent: validator failed for field "Survivor.understanding": %w`, err)}
 		}
 	}
+	if _, ok := sc.mutation.Status(); !ok {
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Survivor.status"`)}
+	}
+	if v, ok := sc.mutation.Status(); ok {
+		if err := survivor.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Survivor.status": %w`, err)}
+		}
+	}
+	if _, ok := sc.mutation.StatusChangeYear(); !ok {
+		return &ValidationError{Name: "status_change_year", err: errors.New(`ent: missing required field "Survivor.status_change_year"`)}
+	}
 	return nil
 }
 
@@ -601,6 +648,14 @@ func (sc *SurvivorCreate) createSpec() (*Survivor, *sqlgraph.CreateSpec) {
 	if value, ok := sc.mutation.Understanding(); ok {
 		_spec.SetField(survivor.FieldUnderstanding, field.TypeInt, value)
 		_node.Understanding = value
+	}
+	if value, ok := sc.mutation.Status(); ok {
+		_spec.SetField(survivor.FieldStatus, field.TypeEnum, value)
+		_node.Status = value
+	}
+	if value, ok := sc.mutation.StatusChangeYear(); ok {
+		_spec.SetField(survivor.FieldStatusChangeYear, field.TypeInt, value)
+		_node.StatusChangeYear = value
 	}
 	if nodes := sc.mutation.SettlementIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

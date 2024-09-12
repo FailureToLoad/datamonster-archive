@@ -589,6 +589,22 @@ type SurvivorWhereInput struct {
 	UnderstandingLT    *int  `json:"understandingLT,omitempty"`
 	UnderstandingLTE   *int  `json:"understandingLTE,omitempty"`
 
+	// "status" field predicates.
+	Status      *survivor.Status  `json:"status,omitempty"`
+	StatusNEQ   *survivor.Status  `json:"statusNEQ,omitempty"`
+	StatusIn    []survivor.Status `json:"statusIn,omitempty"`
+	StatusNotIn []survivor.Status `json:"statusNotIn,omitempty"`
+
+	// "status_change_year" field predicates.
+	StatusChangeYear      *int  `json:"statusChangeYear,omitempty"`
+	StatusChangeYearNEQ   *int  `json:"statusChangeYearNEQ,omitempty"`
+	StatusChangeYearIn    []int `json:"statusChangeYearIn,omitempty"`
+	StatusChangeYearNotIn []int `json:"statusChangeYearNotIn,omitempty"`
+	StatusChangeYearGT    *int  `json:"statusChangeYearGT,omitempty"`
+	StatusChangeYearGTE   *int  `json:"statusChangeYearGTE,omitempty"`
+	StatusChangeYearLT    *int  `json:"statusChangeYearLT,omitempty"`
+	StatusChangeYearLTE   *int  `json:"statusChangeYearLTE,omitempty"`
+
 	// "settlement_id" field predicates.
 	SettlementID       *int  `json:"settlementID,omitempty"`
 	SettlementIDNEQ    *int  `json:"settlementIDNEQ,omitempty"`
@@ -1107,6 +1123,42 @@ func (i *SurvivorWhereInput) P() (predicate.Survivor, error) {
 	}
 	if i.UnderstandingLTE != nil {
 		predicates = append(predicates, survivor.UnderstandingLTE(*i.UnderstandingLTE))
+	}
+	if i.Status != nil {
+		predicates = append(predicates, survivor.StatusEQ(*i.Status))
+	}
+	if i.StatusNEQ != nil {
+		predicates = append(predicates, survivor.StatusNEQ(*i.StatusNEQ))
+	}
+	if len(i.StatusIn) > 0 {
+		predicates = append(predicates, survivor.StatusIn(i.StatusIn...))
+	}
+	if len(i.StatusNotIn) > 0 {
+		predicates = append(predicates, survivor.StatusNotIn(i.StatusNotIn...))
+	}
+	if i.StatusChangeYear != nil {
+		predicates = append(predicates, survivor.StatusChangeYearEQ(*i.StatusChangeYear))
+	}
+	if i.StatusChangeYearNEQ != nil {
+		predicates = append(predicates, survivor.StatusChangeYearNEQ(*i.StatusChangeYearNEQ))
+	}
+	if len(i.StatusChangeYearIn) > 0 {
+		predicates = append(predicates, survivor.StatusChangeYearIn(i.StatusChangeYearIn...))
+	}
+	if len(i.StatusChangeYearNotIn) > 0 {
+		predicates = append(predicates, survivor.StatusChangeYearNotIn(i.StatusChangeYearNotIn...))
+	}
+	if i.StatusChangeYearGT != nil {
+		predicates = append(predicates, survivor.StatusChangeYearGT(*i.StatusChangeYearGT))
+	}
+	if i.StatusChangeYearGTE != nil {
+		predicates = append(predicates, survivor.StatusChangeYearGTE(*i.StatusChangeYearGTE))
+	}
+	if i.StatusChangeYearLT != nil {
+		predicates = append(predicates, survivor.StatusChangeYearLT(*i.StatusChangeYearLT))
+	}
+	if i.StatusChangeYearLTE != nil {
+		predicates = append(predicates, survivor.StatusChangeYearLTE(*i.StatusChangeYearLTE))
 	}
 	if i.SettlementID != nil {
 		predicates = append(predicates, survivor.SettlementIDEQ(*i.SettlementID))

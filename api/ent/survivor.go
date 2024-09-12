@@ -51,6 +51,10 @@ type Survivor struct {
 	Courage int `json:"courage,omitempty"`
 	// Understanding holds the value of the "understanding" field.
 	Understanding int `json:"understanding,omitempty"`
+	// Status holds the value of the "status" field.
+	Status survivor.Status `json:"status,omitempty"`
+	// StatusChangeYear holds the value of the "status_change_year" field.
+	StatusChangeYear int `json:"status_change_year,omitempty"`
 	// SettlementID holds the value of the "settlement_id" field.
 	SettlementID int `json:"settlement_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -86,9 +90,9 @@ func (*Survivor) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case survivor.FieldID, survivor.FieldBorn, survivor.FieldHuntxp, survivor.FieldSurvival, survivor.FieldMovement, survivor.FieldAccuracy, survivor.FieldStrength, survivor.FieldEvasion, survivor.FieldLuck, survivor.FieldSpeed, survivor.FieldSystemicpressure, survivor.FieldTorment, survivor.FieldInsanity, survivor.FieldLumi, survivor.FieldCourage, survivor.FieldUnderstanding, survivor.FieldSettlementID:
+		case survivor.FieldID, survivor.FieldBorn, survivor.FieldHuntxp, survivor.FieldSurvival, survivor.FieldMovement, survivor.FieldAccuracy, survivor.FieldStrength, survivor.FieldEvasion, survivor.FieldLuck, survivor.FieldSpeed, survivor.FieldSystemicpressure, survivor.FieldTorment, survivor.FieldInsanity, survivor.FieldLumi, survivor.FieldCourage, survivor.FieldUnderstanding, survivor.FieldStatusChangeYear, survivor.FieldSettlementID:
 			values[i] = new(sql.NullInt64)
-		case survivor.FieldName, survivor.FieldGender:
+		case survivor.FieldName, survivor.FieldGender, survivor.FieldStatus:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -213,6 +217,18 @@ func (s *Survivor) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				s.Understanding = int(value.Int64)
 			}
+		case survivor.FieldStatus:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field status", values[i])
+			} else if value.Valid {
+				s.Status = survivor.Status(value.String)
+			}
+		case survivor.FieldStatusChangeYear:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field status_change_year", values[i])
+			} else if value.Valid {
+				s.StatusChangeYear = int(value.Int64)
+			}
 		case survivor.FieldSettlementID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field settlement_id", values[i])
@@ -310,6 +326,12 @@ func (s *Survivor) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("understanding=")
 	builder.WriteString(fmt.Sprintf("%v", s.Understanding))
+	builder.WriteString(", ")
+	builder.WriteString("status=")
+	builder.WriteString(fmt.Sprintf("%v", s.Status))
+	builder.WriteString(", ")
+	builder.WriteString("status_change_year=")
+	builder.WriteString(fmt.Sprintf("%v", s.StatusChangeYear))
 	builder.WriteString(", ")
 	builder.WriteString("settlement_id=")
 	builder.WriteString(fmt.Sprintf("%v", s.SettlementID))

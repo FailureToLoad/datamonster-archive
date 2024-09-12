@@ -20,6 +20,11 @@ func (r *mutationResolver) UpdateSurvivor(ctx context.Context, id int, input ent
 	return r.client.Survivor.UpdateOneID(id).SetInput(input).Save(ctx)
 }
 
+// DeleteSurvivor is the resolver for the deleteSurvivor field.
+func (r *mutationResolver) DeleteSurvivor(ctx context.Context, id int) (*bool, error) {
+	return nil, r.client.Survivor.DeleteOneID(id).Exec(ctx)
+}
+
 // Survivors is the resolver for the survivors field.
 func (r *queryResolver) Survivors(ctx context.Context, filter *ent.SurvivorWhereInput, order *ent.SurvivorOrder) ([]*ent.Survivor, error) {
 	query := r.client.Survivor.Query()

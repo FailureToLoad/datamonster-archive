@@ -1,5 +1,5 @@
 import {gql} from '@/__generated__';
-import {Survivor, SurvivorGender} from '@types';
+import {Survivor, SurvivorGender, SurvivorStatus} from '@types';
 
 export const CreateSurvivor = gql(/* GraphQL */ `
   mutation CreateSurvivor($input: CreateSurvivorInput!) {
@@ -38,10 +38,30 @@ export type CreateSurvivorRequest = {
   lumi?: number;
   courage?: number;
   understanding?: number;
+  status?: SurvivorStatus;
+  statusChangedYear?: number;
 };
 
-export type UpdateSurvivorRequest = CreateSurvivorRequest & {
-  id: string;
+export type UpdateSurvivorRequest = {
+  name?: string;
+  born?: number;
+  gender?: SurvivorGender;
+  huntxp?: number;
+  survival?: number;
+  movement?: number;
+  accuracy?: number;
+  strength?: number;
+  evasion?: number;
+  luck?: number;
+  speed?: number;
+  insanity?: number;
+  systemicpressure?: number;
+  torment?: number;
+  lumi?: number;
+  courage?: number;
+  understanding?: number;
+  status?: SurvivorStatus;
+  statusChangeYear?: number;
 };
 
 export const DefaultSurvivor: Survivor = {
@@ -64,4 +84,31 @@ export const DefaultSurvivor: Survivor = {
   torment: 0,
   courage: 0,
   understanding: 0,
+  status: SurvivorStatus.Alive,
+  statusChangeYear: 0,
 };
+
+export const GET_SURVIVORS = gql(/* GraphQL */ `
+  query GetSurvivors($settlementId: ID!) {
+    survivors(filter: {settlementID: $settlementId}) {
+      id
+      accuracy
+      born
+      courage
+      evasion
+      gender
+      huntxp
+      insanity
+      luck
+      lumi
+      movement
+      name
+      speed
+      strength
+      survival
+      systemicpressure
+      torment
+      understanding
+    }
+  }
+`);

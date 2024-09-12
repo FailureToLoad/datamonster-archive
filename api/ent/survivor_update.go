@@ -371,6 +371,41 @@ func (su *SurvivorUpdate) AddUnderstanding(i int) *SurvivorUpdate {
 	return su
 }
 
+// SetStatus sets the "status" field.
+func (su *SurvivorUpdate) SetStatus(s survivor.Status) *SurvivorUpdate {
+	su.mutation.SetStatus(s)
+	return su
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (su *SurvivorUpdate) SetNillableStatus(s *survivor.Status) *SurvivorUpdate {
+	if s != nil {
+		su.SetStatus(*s)
+	}
+	return su
+}
+
+// SetStatusChangeYear sets the "status_change_year" field.
+func (su *SurvivorUpdate) SetStatusChangeYear(i int) *SurvivorUpdate {
+	su.mutation.ResetStatusChangeYear()
+	su.mutation.SetStatusChangeYear(i)
+	return su
+}
+
+// SetNillableStatusChangeYear sets the "status_change_year" field if the given value is not nil.
+func (su *SurvivorUpdate) SetNillableStatusChangeYear(i *int) *SurvivorUpdate {
+	if i != nil {
+		su.SetStatusChangeYear(*i)
+	}
+	return su
+}
+
+// AddStatusChangeYear adds i to the "status_change_year" field.
+func (su *SurvivorUpdate) AddStatusChangeYear(i int) *SurvivorUpdate {
+	su.mutation.AddStatusChangeYear(i)
+	return su
+}
+
 // SetSettlementID sets the "settlement_id" field.
 func (su *SurvivorUpdate) SetSettlementID(i int) *SurvivorUpdate {
 	su.mutation.SetSettlementID(i)
@@ -521,6 +556,11 @@ func (su *SurvivorUpdate) check() error {
 			return &ValidationError{Name: "understanding", err: fmt.Errorf(`ent: validator failed for field "Survivor.understanding": %w`, err)}
 		}
 	}
+	if v, ok := su.mutation.Status(); ok {
+		if err := survivor.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Survivor.status": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -631,6 +671,15 @@ func (su *SurvivorUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := su.mutation.AddedUnderstanding(); ok {
 		_spec.AddField(survivor.FieldUnderstanding, field.TypeInt, value)
+	}
+	if value, ok := su.mutation.Status(); ok {
+		_spec.SetField(survivor.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := su.mutation.StatusChangeYear(); ok {
+		_spec.SetField(survivor.FieldStatusChangeYear, field.TypeInt, value)
+	}
+	if value, ok := su.mutation.AddedStatusChangeYear(); ok {
+		_spec.AddField(survivor.FieldStatusChangeYear, field.TypeInt, value)
 	}
 	if su.mutation.SettlementCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1024,6 +1073,41 @@ func (suo *SurvivorUpdateOne) AddUnderstanding(i int) *SurvivorUpdateOne {
 	return suo
 }
 
+// SetStatus sets the "status" field.
+func (suo *SurvivorUpdateOne) SetStatus(s survivor.Status) *SurvivorUpdateOne {
+	suo.mutation.SetStatus(s)
+	return suo
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (suo *SurvivorUpdateOne) SetNillableStatus(s *survivor.Status) *SurvivorUpdateOne {
+	if s != nil {
+		suo.SetStatus(*s)
+	}
+	return suo
+}
+
+// SetStatusChangeYear sets the "status_change_year" field.
+func (suo *SurvivorUpdateOne) SetStatusChangeYear(i int) *SurvivorUpdateOne {
+	suo.mutation.ResetStatusChangeYear()
+	suo.mutation.SetStatusChangeYear(i)
+	return suo
+}
+
+// SetNillableStatusChangeYear sets the "status_change_year" field if the given value is not nil.
+func (suo *SurvivorUpdateOne) SetNillableStatusChangeYear(i *int) *SurvivorUpdateOne {
+	if i != nil {
+		suo.SetStatusChangeYear(*i)
+	}
+	return suo
+}
+
+// AddStatusChangeYear adds i to the "status_change_year" field.
+func (suo *SurvivorUpdateOne) AddStatusChangeYear(i int) *SurvivorUpdateOne {
+	suo.mutation.AddStatusChangeYear(i)
+	return suo
+}
+
 // SetSettlementID sets the "settlement_id" field.
 func (suo *SurvivorUpdateOne) SetSettlementID(i int) *SurvivorUpdateOne {
 	suo.mutation.SetSettlementID(i)
@@ -1187,6 +1271,11 @@ func (suo *SurvivorUpdateOne) check() error {
 			return &ValidationError{Name: "understanding", err: fmt.Errorf(`ent: validator failed for field "Survivor.understanding": %w`, err)}
 		}
 	}
+	if v, ok := suo.mutation.Status(); ok {
+		if err := survivor.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Survivor.status": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -1314,6 +1403,15 @@ func (suo *SurvivorUpdateOne) sqlSave(ctx context.Context) (_node *Survivor, err
 	}
 	if value, ok := suo.mutation.AddedUnderstanding(); ok {
 		_spec.AddField(survivor.FieldUnderstanding, field.TypeInt, value)
+	}
+	if value, ok := suo.mutation.Status(); ok {
+		_spec.SetField(survivor.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := suo.mutation.StatusChangeYear(); ok {
+		_spec.SetField(survivor.FieldStatusChangeYear, field.TypeInt, value)
+	}
+	if value, ok := suo.mutation.AddedStatusChangeYear(); ok {
+		_spec.AddField(survivor.FieldStatusChangeYear, field.TypeInt, value)
 	}
 	if suo.mutation.SettlementCleared() {
 		edge := &sqlgraph.EdgeSpec{

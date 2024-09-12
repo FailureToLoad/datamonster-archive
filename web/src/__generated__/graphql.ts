@@ -54,6 +54,8 @@ export type CreateSurvivorInput = {
   name: Scalars['String']['input'];
   settlementID?: InputMaybe<Scalars['ID']['input']>;
   speed?: InputMaybe<Scalars['Int']['input']>;
+  status?: InputMaybe<SurvivorStatus>;
+  statusChangeYear?: InputMaybe<Scalars['Int']['input']>;
   strength?: InputMaybe<Scalars['Int']['input']>;
   survival?: InputMaybe<Scalars['Int']['input']>;
   systemicpressure?: InputMaybe<Scalars['Int']['input']>;
@@ -65,6 +67,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   createSettlement?: Maybe<Settlement>;
   createSurvivor?: Maybe<Survivor>;
+  deleteSurvivor?: Maybe<Scalars['Boolean']['output']>;
   updateSettlement?: Maybe<Settlement>;
   updateSurvivor?: Maybe<Survivor>;
 };
@@ -77,6 +80,11 @@ export type MutationCreateSettlementArgs = {
 
 export type MutationCreateSurvivorArgs = {
   input: CreateSurvivorInput;
+};
+
+
+export type MutationDeleteSurvivorArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -289,6 +297,8 @@ export type Survivor = Node & {
   settlement?: Maybe<Settlement>;
   settlementID?: Maybe<Scalars['ID']['output']>;
   speed: Scalars['Int']['output'];
+  status: SurvivorStatus;
+  statusChangeYear: Scalars['Int']['output'];
   strength: Scalars['Int']['output'];
   survival: Scalars['Int']['output'];
   systemicpressure: Scalars['Int']['output'];
@@ -325,11 +335,22 @@ export enum SurvivorOrderField {
   Name = 'NAME',
   Settlementid = 'SETTLEMENTID',
   Speed = 'SPEED',
+  Status = 'STATUS',
+  StatusChangeYear = 'STATUS_CHANGE_YEAR',
   Strength = 'STRENGTH',
   Survval = 'SURVVAL',
   Systemicpressure = 'SYSTEMICPRESSURE',
   Torment = 'TORMENT',
   Understanding = 'UNDERSTANDING'
+}
+
+/** SurvivorStatus is enum for the field status */
+export enum SurvivorStatus {
+  Alive = 'alive',
+  CeasedToExist = 'ceased_to_exist',
+  Dead = 'dead',
+  Retired = 'retired',
+  SkipHunt = 'skip_hunt'
 }
 
 /**
@@ -468,6 +489,20 @@ export type SurvivorWhereInput = {
   speedLTE?: InputMaybe<Scalars['Int']['input']>;
   speedNEQ?: InputMaybe<Scalars['Int']['input']>;
   speedNotIn?: InputMaybe<Array<Scalars['Int']['input']>>;
+  /** status field predicates */
+  status?: InputMaybe<SurvivorStatus>;
+  /** status_change_year field predicates */
+  statusChangeYear?: InputMaybe<Scalars['Int']['input']>;
+  statusChangeYearGT?: InputMaybe<Scalars['Int']['input']>;
+  statusChangeYearGTE?: InputMaybe<Scalars['Int']['input']>;
+  statusChangeYearIn?: InputMaybe<Array<Scalars['Int']['input']>>;
+  statusChangeYearLT?: InputMaybe<Scalars['Int']['input']>;
+  statusChangeYearLTE?: InputMaybe<Scalars['Int']['input']>;
+  statusChangeYearNEQ?: InputMaybe<Scalars['Int']['input']>;
+  statusChangeYearNotIn?: InputMaybe<Array<Scalars['Int']['input']>>;
+  statusIn?: InputMaybe<Array<SurvivorStatus>>;
+  statusNEQ?: InputMaybe<SurvivorStatus>;
+  statusNotIn?: InputMaybe<Array<SurvivorStatus>>;
   /** strength field predicates */
   strength?: InputMaybe<Scalars['Int']['input']>;
   strengthGT?: InputMaybe<Scalars['Int']['input']>;
@@ -551,6 +586,8 @@ export type UpdateSurvivorInput = {
   name?: InputMaybe<Scalars['String']['input']>;
   settlementID?: InputMaybe<Scalars['ID']['input']>;
   speed?: InputMaybe<Scalars['Int']['input']>;
+  status?: InputMaybe<SurvivorStatus>;
+  statusChangeYear?: InputMaybe<Scalars['Int']['input']>;
   strength?: InputMaybe<Scalars['Int']['input']>;
   survival?: InputMaybe<Scalars['Int']['input']>;
   systemicpressure?: InputMaybe<Scalars['Int']['input']>;
@@ -572,6 +609,13 @@ export type UpdateSurvivorMutationVariables = Exact<{
 
 
 export type UpdateSurvivorMutation = { __typename?: 'Mutation', updateSurvivor?: { __typename?: 'Survivor', id: string, name: string } | null };
+
+export type DeleteSurvivorMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type DeleteSurvivorMutation = { __typename?: 'Mutation', deleteSurvivor?: boolean | null };
 
 export type GetSurvivorsQueryVariables = Exact<{
   settlementId: Scalars['ID']['input'];
@@ -595,6 +639,7 @@ export type GetSettlementsQuery = { __typename?: 'Query', settlements?: Array<{ 
 
 export const CreateSurvivorDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateSurvivor"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateSurvivorInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createSurvivor"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]} as unknown as DocumentNode<CreateSurvivorMutation, CreateSurvivorMutationVariables>;
 export const UpdateSurvivorDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateSurvivor"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateSurvivorInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateSurvivor"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]} as unknown as DocumentNode<UpdateSurvivorMutation, UpdateSurvivorMutationVariables>;
+export const DeleteSurvivorDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteSurvivor"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteSurvivor"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<DeleteSurvivorMutation, DeleteSurvivorMutationVariables>;
 export const GetSurvivorsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetSurvivors"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"settlementId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"survivors"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"settlementID"},"value":{"kind":"Variable","name":{"kind":"Name","value":"settlementId"}}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"accuracy"}},{"kind":"Field","name":{"kind":"Name","value":"born"}},{"kind":"Field","name":{"kind":"Name","value":"courage"}},{"kind":"Field","name":{"kind":"Name","value":"evasion"}},{"kind":"Field","name":{"kind":"Name","value":"gender"}},{"kind":"Field","name":{"kind":"Name","value":"huntxp"}},{"kind":"Field","name":{"kind":"Name","value":"insanity"}},{"kind":"Field","name":{"kind":"Name","value":"luck"}},{"kind":"Field","name":{"kind":"Name","value":"lumi"}},{"kind":"Field","name":{"kind":"Name","value":"movement"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"speed"}},{"kind":"Field","name":{"kind":"Name","value":"strength"}},{"kind":"Field","name":{"kind":"Name","value":"survival"}},{"kind":"Field","name":{"kind":"Name","value":"systemicpressure"}},{"kind":"Field","name":{"kind":"Name","value":"torment"}},{"kind":"Field","name":{"kind":"Name","value":"understanding"}}]}}]}}]} as unknown as DocumentNode<GetSurvivorsQuery, GetSurvivorsQueryVariables>;
 export const CreateSettlementDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateSettlement"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateSettlementInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createSettlement"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"owner"}}]}}]}}]} as unknown as DocumentNode<CreateSettlementMutation, CreateSettlementMutationVariables>;
 export const GetSettlementsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetSettlements"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"settlements"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]} as unknown as DocumentNode<GetSettlementsQuery, GetSettlementsQueryVariables>;

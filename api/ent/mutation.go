@@ -855,47 +855,50 @@ func (m *SettlementMutation) ResetEdge(name string) error {
 // SurvivorMutation represents an operation that mutates the Survivor nodes in the graph.
 type SurvivorMutation struct {
 	config
-	op                  Op
-	typ                 string
-	id                  *int
-	name                *string
-	born                *int
-	addborn             *int
-	gender              *survivor.Gender
-	huntxp              *int
-	addhuntxp           *int
-	survival            *int
-	addsurvival         *int
-	movement            *int
-	addmovement         *int
-	accuracy            *int
-	addaccuracy         *int
-	strength            *int
-	addstrength         *int
-	evasion             *int
-	addevasion          *int
-	luck                *int
-	addluck             *int
-	speed               *int
-	addspeed            *int
-	systemicpressure    *int
-	addsystemicpressure *int
-	torment             *int
-	addtorment          *int
-	insanity            *int
-	addinsanity         *int
-	lumi                *int
-	addlumi             *int
-	courage             *int
-	addcourage          *int
-	understanding       *int
-	addunderstanding    *int
-	clearedFields       map[string]struct{}
-	settlement          *int
-	clearedsettlement   bool
-	done                bool
-	oldValue            func(context.Context) (*Survivor, error)
-	predicates          []predicate.Survivor
+	op                    Op
+	typ                   string
+	id                    *int
+	name                  *string
+	born                  *int
+	addborn               *int
+	gender                *survivor.Gender
+	huntxp                *int
+	addhuntxp             *int
+	survival              *int
+	addsurvival           *int
+	movement              *int
+	addmovement           *int
+	accuracy              *int
+	addaccuracy           *int
+	strength              *int
+	addstrength           *int
+	evasion               *int
+	addevasion            *int
+	luck                  *int
+	addluck               *int
+	speed                 *int
+	addspeed              *int
+	systemicpressure      *int
+	addsystemicpressure   *int
+	torment               *int
+	addtorment            *int
+	insanity              *int
+	addinsanity           *int
+	lumi                  *int
+	addlumi               *int
+	courage               *int
+	addcourage            *int
+	understanding         *int
+	addunderstanding      *int
+	status                *survivor.Status
+	status_change_year    *int
+	addstatus_change_year *int
+	clearedFields         map[string]struct{}
+	settlement            *int
+	clearedsettlement     bool
+	done                  bool
+	oldValue              func(context.Context) (*Survivor, error)
+	predicates            []predicate.Survivor
 }
 
 var _ ent.Mutation = (*SurvivorMutation)(nil)
@@ -1908,6 +1911,98 @@ func (m *SurvivorMutation) ResetUnderstanding() {
 	m.addunderstanding = nil
 }
 
+// SetStatus sets the "status" field.
+func (m *SurvivorMutation) SetStatus(s survivor.Status) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *SurvivorMutation) Status() (r survivor.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the Survivor entity.
+// If the Survivor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SurvivorMutation) OldStatus(ctx context.Context) (v survivor.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *SurvivorMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetStatusChangeYear sets the "status_change_year" field.
+func (m *SurvivorMutation) SetStatusChangeYear(i int) {
+	m.status_change_year = &i
+	m.addstatus_change_year = nil
+}
+
+// StatusChangeYear returns the value of the "status_change_year" field in the mutation.
+func (m *SurvivorMutation) StatusChangeYear() (r int, exists bool) {
+	v := m.status_change_year
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatusChangeYear returns the old "status_change_year" field's value of the Survivor entity.
+// If the Survivor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SurvivorMutation) OldStatusChangeYear(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatusChangeYear is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatusChangeYear requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatusChangeYear: %w", err)
+	}
+	return oldValue.StatusChangeYear, nil
+}
+
+// AddStatusChangeYear adds i to the "status_change_year" field.
+func (m *SurvivorMutation) AddStatusChangeYear(i int) {
+	if m.addstatus_change_year != nil {
+		*m.addstatus_change_year += i
+	} else {
+		m.addstatus_change_year = &i
+	}
+}
+
+// AddedStatusChangeYear returns the value that was added to the "status_change_year" field in this mutation.
+func (m *SurvivorMutation) AddedStatusChangeYear() (r int, exists bool) {
+	v := m.addstatus_change_year
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetStatusChangeYear resets all changes to the "status_change_year" field.
+func (m *SurvivorMutation) ResetStatusChangeYear() {
+	m.status_change_year = nil
+	m.addstatus_change_year = nil
+}
+
 // SetSettlementID sets the "settlement_id" field.
 func (m *SurvivorMutation) SetSettlementID(i int) {
 	m.settlement = &i
@@ -2018,7 +2113,7 @@ func (m *SurvivorMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SurvivorMutation) Fields() []string {
-	fields := make([]string, 0, 18)
+	fields := make([]string, 0, 20)
 	if m.name != nil {
 		fields = append(fields, survivor.FieldName)
 	}
@@ -2070,6 +2165,12 @@ func (m *SurvivorMutation) Fields() []string {
 	if m.understanding != nil {
 		fields = append(fields, survivor.FieldUnderstanding)
 	}
+	if m.status != nil {
+		fields = append(fields, survivor.FieldStatus)
+	}
+	if m.status_change_year != nil {
+		fields = append(fields, survivor.FieldStatusChangeYear)
+	}
 	if m.settlement != nil {
 		fields = append(fields, survivor.FieldSettlementID)
 	}
@@ -2115,6 +2216,10 @@ func (m *SurvivorMutation) Field(name string) (ent.Value, bool) {
 		return m.Courage()
 	case survivor.FieldUnderstanding:
 		return m.Understanding()
+	case survivor.FieldStatus:
+		return m.Status()
+	case survivor.FieldStatusChangeYear:
+		return m.StatusChangeYear()
 	case survivor.FieldSettlementID:
 		return m.SettlementID()
 	}
@@ -2160,6 +2265,10 @@ func (m *SurvivorMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldCourage(ctx)
 	case survivor.FieldUnderstanding:
 		return m.OldUnderstanding(ctx)
+	case survivor.FieldStatus:
+		return m.OldStatus(ctx)
+	case survivor.FieldStatusChangeYear:
+		return m.OldStatusChangeYear(ctx)
 	case survivor.FieldSettlementID:
 		return m.OldSettlementID(ctx)
 	}
@@ -2290,6 +2399,20 @@ func (m *SurvivorMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUnderstanding(v)
 		return nil
+	case survivor.FieldStatus:
+		v, ok := value.(survivor.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case survivor.FieldStatusChangeYear:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatusChangeYear(v)
+		return nil
 	case survivor.FieldSettlementID:
 		v, ok := value.(int)
 		if !ok {
@@ -2350,6 +2473,9 @@ func (m *SurvivorMutation) AddedFields() []string {
 	if m.addunderstanding != nil {
 		fields = append(fields, survivor.FieldUnderstanding)
 	}
+	if m.addstatus_change_year != nil {
+		fields = append(fields, survivor.FieldStatusChangeYear)
+	}
 	return fields
 }
 
@@ -2388,6 +2514,8 @@ func (m *SurvivorMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedCourage()
 	case survivor.FieldUnderstanding:
 		return m.AddedUnderstanding()
+	case survivor.FieldStatusChangeYear:
+		return m.AddedStatusChangeYear()
 	}
 	return nil, false
 }
@@ -2502,6 +2630,13 @@ func (m *SurvivorMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddUnderstanding(v)
 		return nil
+	case survivor.FieldStatusChangeYear:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddStatusChangeYear(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Survivor numeric field %s", name)
 }
@@ -2588,6 +2723,12 @@ func (m *SurvivorMutation) ResetField(name string) error {
 		return nil
 	case survivor.FieldUnderstanding:
 		m.ResetUnderstanding()
+		return nil
+	case survivor.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case survivor.FieldStatusChangeYear:
+		m.ResetStatusChangeYear()
 		return nil
 	case survivor.FieldSettlementID:
 		m.ResetSettlementID()

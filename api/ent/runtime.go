@@ -380,4 +380,8 @@ func init() {
 			return nil
 		}
 	}()
+	// survivorDescStatusChangeYear is the schema descriptor for status_change_year field.
+	survivorDescStatusChangeYear := survivorFields[18].Descriptor()
+	// survivor.DefaultStatusChangeYear holds the default value on creation for the status_change_year field.
+	survivor.DefaultStatusChangeYear = survivorDescStatusChangeYear.Default.(int)
 }

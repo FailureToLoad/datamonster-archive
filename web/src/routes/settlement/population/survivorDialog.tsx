@@ -15,7 +15,7 @@ import {Separator} from '@/components/ui/separator';
 import {Input} from '@/components/ui/input';
 import {cn} from '@/lib/utils';
 import {z} from 'zod';
-import {DefaultSurvivor} from '@/lib/services/survivor';
+import {DefaultSurvivor, GET_SURVIVORS} from '@/lib/services/survivor';
 import {Control, FieldPath, useForm} from 'react-hook-form';
 
 import {zodResolver} from '@hookform/resolvers/zod';
@@ -37,7 +37,7 @@ import {
   CreateSurvivorRequest,
   UpdateSurvivor,
 } from '@/lib/services/survivor';
-import { SurvivorGender } from '@/__generated__/graphql';
+import {SurvivorGender} from '@/__generated__/graphql';
 
 const formSchema = z.object({
   name: z
@@ -62,13 +62,9 @@ type SurvivorFormFields = z.infer<typeof formSchema>;
 
 type SurvivorDialogProps = {
   settlementId: string;
-  afterSubmit: () => void;
 };
 
-export default function NewSurvivorDialog({
-  settlementId,
-  afterSubmit,
-}: SurvivorDialogProps) {
+export default function NewSurvivorDialog({settlementId}: SurvivorDialogProps) {
   const [loading, setLoading] = useState(false);
   const {
     currentSurvivor,
@@ -138,6 +134,7 @@ export default function NewSurvivorDialog({
               ...survivor,
             },
           },
+          refetchQueries: [GET_SURVIVORS],
         });
       } else {
         createSurvivor({
@@ -146,11 +143,12 @@ export default function NewSurvivorDialog({
               ...survivor,
             },
           },
+          refetchQueries: [GET_SURVIVORS],
         });
       }
 
-      afterSubmit();
       form.reset({});
+      setLoading(false);
       setDialogOpen(false);
     } catch (error) {
       console.log(error);
