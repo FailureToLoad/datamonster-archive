@@ -38,10 +38,30 @@ export type CreateSurvivorRequest = {
   lumi?: number;
   courage?: number;
   understanding?: number;
+  status?: SurvivorStatus;
+  statusChangedYear?: number;
 };
 
-export type UpdateSurvivorRequest = CreateSurvivorRequest & {
-  id: string;
+export type UpdateSurvivorRequest = {
+  name?: string;
+  born?: number;
+  gender?: SurvivorGender;
+  huntxp?: number;
+  survival?: number;
+  movement?: number;
+  accuracy?: number;
+  strength?: number;
+  evasion?: number;
+  luck?: number;
+  speed?: number;
+  insanity?: number;
+  systemicpressure?: number;
+  torment?: number;
+  lumi?: number;
+  courage?: number;
+  understanding?: number;
+  status?: SurvivorStatus;
+  statusChangeYear?: number;
 };
 
 export const DefaultSurvivor: Survivor = {
