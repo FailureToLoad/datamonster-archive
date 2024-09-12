@@ -932,6 +932,34 @@ var (
 			}
 		},
 	}
+	// SurvivorOrderFieldStatus orders Survivor by status.
+	SurvivorOrderFieldStatus = &SurvivorOrderField{
+		Value: func(s *Survivor) (ent.Value, error) {
+			return s.Status, nil
+		},
+		column: survivor.FieldStatus,
+		toTerm: survivor.ByStatus,
+		toCursor: func(s *Survivor) Cursor {
+			return Cursor{
+				ID:    s.ID,
+				Value: s.Status,
+			}
+		},
+	}
+	// SurvivorOrderFieldStatusChangeYear orders Survivor by status_change_year.
+	SurvivorOrderFieldStatusChangeYear = &SurvivorOrderField{
+		Value: func(s *Survivor) (ent.Value, error) {
+			return s.StatusChangeYear, nil
+		},
+		column: survivor.FieldStatusChangeYear,
+		toTerm: survivor.ByStatusChangeYear,
+		toCursor: func(s *Survivor) Cursor {
+			return Cursor{
+				ID:    s.ID,
+				Value: s.StatusChangeYear,
+			}
+		},
+	}
 	// SurvivorOrderFieldSettlementID orders Survivor by settlement_id.
 	SurvivorOrderFieldSettlementID = &SurvivorOrderField{
 		Value: func(s *Survivor) (ent.Value, error) {
@@ -986,6 +1014,10 @@ func (f SurvivorOrderField) String() string {
 		str = "CURRENCY"
 	case SurvivorOrderFieldUnderstanding.column:
 		str = "UNDERSTANDING"
+	case SurvivorOrderFieldStatus.column:
+		str = "STATUS"
+	case SurvivorOrderFieldStatusChangeYear.column:
+		str = "STATUS_CHANGE_YEAR"
 	case SurvivorOrderFieldSettlementID.column:
 		str = "SETTLEMENTID"
 	}
@@ -1038,6 +1070,10 @@ func (f *SurvivorOrderField) UnmarshalGQL(v interface{}) error {
 		*f = *SurvivorOrderFieldCourage
 	case "UNDERSTANDING":
 		*f = *SurvivorOrderFieldUnderstanding
+	case "STATUS":
+		*f = *SurvivorOrderFieldStatus
+	case "STATUS_CHANGE_YEAR":
+		*f = *SurvivorOrderFieldStatusChangeYear
 	case "SETTLEMENTID":
 		*f = *SurvivorOrderFieldSettlementID
 	default:

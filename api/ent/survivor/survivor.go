@@ -50,6 +50,10 @@ const (
 	FieldCourage = "courage"
 	// FieldUnderstanding holds the string denoting the understanding field in the database.
 	FieldUnderstanding = "understanding"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
+	// FieldStatusChangeYear holds the string denoting the status_change_year field in the database.
+	FieldStatusChangeYear = "status_change_year"
 	// FieldSettlementID holds the string denoting the settlement_id field in the database.
 	FieldSettlementID = "settlement_id"
 	// EdgeSettlement holds the string denoting the settlement edge name in mutations.
@@ -85,6 +89,8 @@ var Columns = []string{
 	FieldLumi,
 	FieldCourage,
 	FieldUnderstanding,
+	FieldStatus,
+	FieldStatusChangeYear,
 	FieldSettlementID,
 }
 
@@ -161,6 +167,8 @@ var (
 	DefaultUnderstanding int
 	// UnderstandingValidator is a validator for the "understanding" field. It is called by the builders before save.
 	UnderstandingValidator func(int) error
+	// DefaultStatusChangeYear holds the default value on creation for the "status_change_year" field.
+	DefaultStatusChangeYear int
 )
 
 // Gender defines the type for the "gender" enum field.
@@ -186,6 +194,35 @@ func GenderValidator(ge Gender) error {
 		return nil
 	default:
 		return fmt.Errorf("survivor: invalid enum value for gender field: %q", ge)
+	}
+}
+
+// Status defines the type for the "status" enum field.
+type Status string
+
+// StatusAlive is the default value of the Status enum.
+const DefaultStatus = StatusAlive
+
+// Status values.
+const (
+	StatusAlive         Status = "alive"
+	StatusDead          Status = "dead"
+	StatusCeasedToExist Status = "ceased_to_exist"
+	StatusRetired       Status = "retired"
+	StatusSkipHunt      Status = "skip_hunt"
+)
+
+func (s Status) String() string {
+	return string(s)
+}
+
+// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
+func StatusValidator(s Status) error {
+	switch s {
+	case StatusAlive, StatusDead, StatusCeasedToExist, StatusRetired, StatusSkipHunt:
+		return nil
+	default:
+		return fmt.Errorf("survivor: invalid enum value for status field: %q", s)
 	}
 }
 
@@ -282,6 +319,16 @@ func ByUnderstanding(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUnderstanding, opts...).ToFunc()
 }
 
+// ByStatus orders the results by the status field.
+func ByStatus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// ByStatusChangeYear orders the results by the status_change_year field.
+func ByStatusChangeYear(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStatusChangeYear, opts...).ToFunc()
+}
+
 // BySettlementID orders the results by the settlement_id field.
 func BySettlementID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSettlementID, opts...).ToFunc()
@@ -315,6 +362,24 @@ func (e *Gender) UnmarshalGQL(val interface{}) error {
 	*e = Gender(str)
 	if err := GenderValidator(*e); err != nil {
 		return fmt.Errorf("%s is not a valid Gender", str)
+	}
+	return nil
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (e Status) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(e.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (e *Status) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*e = Status(str)
+	if err := StatusValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid Status", str)
 	}
 	return nil
 }

@@ -119,6 +119,8 @@ type CreateSurvivorInput struct {
 	Lumi             *int
 	Courage          *int
 	Understanding    *int
+	Status           *survivor.Status
+	StatusChangeYear *int
 	SettlementID     *int
 }
 
@@ -173,6 +175,12 @@ func (i *CreateSurvivorInput) Mutate(m *SurvivorMutation) {
 	if v := i.Understanding; v != nil {
 		m.SetUnderstanding(*v)
 	}
+	if v := i.Status; v != nil {
+		m.SetStatus(*v)
+	}
+	if v := i.StatusChangeYear; v != nil {
+		m.SetStatusChangeYear(*v)
+	}
 	if v := i.SettlementID; v != nil {
 		m.SetSettlementID(*v)
 	}
@@ -203,6 +211,8 @@ type UpdateSurvivorInput struct {
 	Lumi             *int
 	Courage          *int
 	Understanding    *int
+	Status           *survivor.Status
+	StatusChangeYear *int
 	ClearSettlement  bool
 	SettlementID     *int
 }
@@ -259,6 +269,12 @@ func (i *UpdateSurvivorInput) Mutate(m *SurvivorMutation) {
 	}
 	if v := i.Understanding; v != nil {
 		m.SetUnderstanding(*v)
+	}
+	if v := i.Status; v != nil {
+		m.SetStatus(*v)
+	}
+	if v := i.StatusChangeYear; v != nil {
+		m.SetStatusChangeYear(*v)
 	}
 	if i.ClearSettlement {
 		m.ClearSettlement()

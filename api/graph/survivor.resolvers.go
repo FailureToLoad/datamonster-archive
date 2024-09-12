@@ -6,7 +6,6 @@ package graph
 
 import (
 	"context"
-
 	"github.com/failuretoload/datamonster/ent"
 )
 
@@ -18,6 +17,11 @@ func (r *mutationResolver) CreateSurvivor(ctx context.Context, input ent.CreateS
 // UpdateSurvivor is the resolver for the updateSurvivor field.
 func (r *mutationResolver) UpdateSurvivor(ctx context.Context, id int, input ent.UpdateSurvivorInput) (*ent.Survivor, error) {
 	return r.client.Survivor.UpdateOneID(id).SetInput(input).Save(ctx)
+}
+
+// DeleteSurvivor is the resolver for the deleteSurvivor field.
+func (r *mutationResolver) DeleteSurvivor(ctx context.Context, id int) (*bool, error) {
+	return nil, r.client.Survivor.DeleteOneID(id).Exec(ctx)
 }
 
 // Survivors is the resolver for the survivors field.

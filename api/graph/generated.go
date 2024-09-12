@@ -54,6 +54,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		CreateSettlement func(childComplexity int, input ent.CreateSettlementInput) int
 		CreateSurvivor   func(childComplexity int, input ent.CreateSurvivorInput) int
+		DeleteSurvivor   func(childComplexity int, id int) int
 		UpdateSettlement func(childComplexity int, id int, input ent.UpdateSettlementInput) int
 		UpdateSurvivor   func(childComplexity int, id int, input ent.UpdateSurvivorInput) int
 	}
@@ -100,6 +101,8 @@ type ComplexityRoot struct {
 		Settlement       func(childComplexity int) int
 		SettlementID     func(childComplexity int) int
 		Speed            func(childComplexity int) int
+		Status           func(childComplexity int) int
+		StatusChangeYear func(childComplexity int) int
 		Strength         func(childComplexity int) int
 		Survival         func(childComplexity int) int
 		Systemicpressure func(childComplexity int) int
@@ -113,6 +116,7 @@ type MutationResolver interface {
 	UpdateSettlement(ctx context.Context, id int, input ent.UpdateSettlementInput) (*ent.Settlement, error)
 	CreateSurvivor(ctx context.Context, input ent.CreateSurvivorInput) (*ent.Survivor, error)
 	UpdateSurvivor(ctx context.Context, id int, input ent.UpdateSurvivorInput) (*ent.Survivor, error)
+	DeleteSurvivor(ctx context.Context, id int) (*bool, error)
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id int) (ent.Noder, error)
@@ -171,6 +175,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateSurvivor(childComplexity, args["input"].(ent.CreateSurvivorInput)), true
+
+	case "Mutation.deleteSurvivor":
+		if e.complexity.Mutation.DeleteSurvivor == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteSurvivor_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteSurvivor(childComplexity, args["id"].(int)), true
 
 	case "Mutation.updateSettlement":
 		if e.complexity.Mutation.UpdateSettlement == nil {
@@ -440,6 +456,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Survivor.Speed(childComplexity), true
 
+	case "Survivor.status":
+		if e.complexity.Survivor.Status == nil {
+			break
+		}
+
+		return e.complexity.Survivor.Status(childComplexity), true
+
+	case "Survivor.statusChangeYear":
+		if e.complexity.Survivor.StatusChangeYear == nil {
+			break
+		}
+
+		return e.complexity.Survivor.StatusChangeYear(childComplexity), true
+
 	case "Survivor.strength":
 		if e.complexity.Survivor.Strength == nil {
 			break
@@ -636,6 +666,21 @@ func (ec *executionContext) field_Mutation_createSurvivor_args(ctx context.Conte
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteSurvivor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -1021,6 +1066,10 @@ func (ec *executionContext) fieldContext_Mutation_createSurvivor(ctx context.Con
 				return ec.fieldContext_Survivor_courage(ctx, field)
 			case "understanding":
 				return ec.fieldContext_Survivor_understanding(ctx, field)
+			case "status":
+				return ec.fieldContext_Survivor_status(ctx, field)
+			case "statusChangeYear":
+				return ec.fieldContext_Survivor_statusChangeYear(ctx, field)
 			case "settlementID":
 				return ec.fieldContext_Survivor_settlementID(ctx, field)
 			case "settlement":
@@ -1115,6 +1164,10 @@ func (ec *executionContext) fieldContext_Mutation_updateSurvivor(ctx context.Con
 				return ec.fieldContext_Survivor_courage(ctx, field)
 			case "understanding":
 				return ec.fieldContext_Survivor_understanding(ctx, field)
+			case "status":
+				return ec.fieldContext_Survivor_status(ctx, field)
+			case "statusChangeYear":
+				return ec.fieldContext_Survivor_statusChangeYear(ctx, field)
 			case "settlementID":
 				return ec.fieldContext_Survivor_settlementID(ctx, field)
 			case "settlement":
@@ -1131,6 +1184,58 @@ func (ec *executionContext) fieldContext_Mutation_updateSurvivor(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_updateSurvivor_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteSurvivor(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteSurvivor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteSurvivor(rctx, fc.Args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteSurvivor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteSurvivor_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -1615,6 +1720,10 @@ func (ec *executionContext) fieldContext_Query_survivors(ctx context.Context, fi
 				return ec.fieldContext_Survivor_courage(ctx, field)
 			case "understanding":
 				return ec.fieldContext_Survivor_understanding(ctx, field)
+			case "status":
+				return ec.fieldContext_Survivor_status(ctx, field)
+			case "statusChangeYear":
+				return ec.fieldContext_Survivor_statusChangeYear(ctx, field)
 			case "settlementID":
 				return ec.fieldContext_Survivor_settlementID(ctx, field)
 			case "settlement":
@@ -2146,6 +2255,10 @@ func (ec *executionContext) fieldContext_Settlement_population(_ context.Context
 				return ec.fieldContext_Survivor_courage(ctx, field)
 			case "understanding":
 				return ec.fieldContext_Survivor_understanding(ctx, field)
+			case "status":
+				return ec.fieldContext_Survivor_status(ctx, field)
+			case "statusChangeYear":
+				return ec.fieldContext_Survivor_statusChangeYear(ctx, field)
 			case "settlementID":
 				return ec.fieldContext_Survivor_settlementID(ctx, field)
 			case "settlement":
@@ -2937,6 +3050,94 @@ func (ec *executionContext) _Survivor_understanding(ctx context.Context, field g
 }
 
 func (ec *executionContext) fieldContext_Survivor_understanding(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Survivor",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Survivor_status(ctx context.Context, field graphql.CollectedField, obj *ent.Survivor) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Survivor_status(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(survivor.Status)
+	fc.Result = res
+	return ec.marshalNSurvivorStatus2githubᚗcomᚋfailuretoloadᚋdatamonsterᚋentᚋsurvivorᚐStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Survivor_status(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Survivor",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type SurvivorStatus does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Survivor_statusChangeYear(ctx context.Context, field graphql.CollectedField, obj *ent.Survivor) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Survivor_statusChangeYear(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.StatusChangeYear, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Survivor_statusChangeYear(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Survivor",
 		Field:      field,
@@ -4907,7 +5108,7 @@ func (ec *executionContext) unmarshalInputCreateSurvivorInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "born", "gender", "huntxp", "survival", "movement", "accuracy", "strength", "evasion", "luck", "speed", "systemicpressure", "torment", "insanity", "lumi", "courage", "understanding", "settlementID"}
+	fieldsInOrder := [...]string{"name", "born", "gender", "huntxp", "survival", "movement", "accuracy", "strength", "evasion", "luck", "speed", "systemicpressure", "torment", "insanity", "lumi", "courage", "understanding", "status", "statusChangeYear", "settlementID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5033,6 +5234,20 @@ func (ec *executionContext) unmarshalInputCreateSurvivorInput(ctx context.Contex
 				return it, err
 			}
 			it.Understanding = data
+		case "status":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalOSurvivorStatus2ᚖgithubᚗcomᚋfailuretoloadᚋdatamonsterᚋentᚋsurvivorᚐStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Status = data
+		case "statusChangeYear":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusChangeYear"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusChangeYear = data
 		case "settlementID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("settlementID"))
 			data, err := ec.unmarshalOID2ᚖint(ctx, v)
@@ -5646,7 +5861,7 @@ func (ec *executionContext) unmarshalInputSurvivorWhereInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "born", "bornNEQ", "bornIn", "bornNotIn", "bornGT", "bornGTE", "bornLT", "bornLTE", "gender", "genderNEQ", "genderIn", "genderNotIn", "huntxp", "huntxpNEQ", "huntxpIn", "huntxpNotIn", "huntxpGT", "huntxpGTE", "huntxpLT", "huntxpLTE", "survival", "survivalNEQ", "survivalIn", "survivalNotIn", "survivalGT", "survivalGTE", "survivalLT", "survivalLTE", "movement", "movementNEQ", "movementIn", "movementNotIn", "movementGT", "movementGTE", "movementLT", "movementLTE", "accuracy", "accuracyNEQ", "accuracyIn", "accuracyNotIn", "accuracyGT", "accuracyGTE", "accuracyLT", "accuracyLTE", "strength", "strengthNEQ", "strengthIn", "strengthNotIn", "strengthGT", "strengthGTE", "strengthLT", "strengthLTE", "evasion", "evasionNEQ", "evasionIn", "evasionNotIn", "evasionGT", "evasionGTE", "evasionLT", "evasionLTE", "luck", "luckNEQ", "luckIn", "luckNotIn", "luckGT", "luckGTE", "luckLT", "luckLTE", "speed", "speedNEQ", "speedIn", "speedNotIn", "speedGT", "speedGTE", "speedLT", "speedLTE", "systemicpressure", "systemicpressureNEQ", "systemicpressureIn", "systemicpressureNotIn", "systemicpressureGT", "systemicpressureGTE", "systemicpressureLT", "systemicpressureLTE", "torment", "tormentNEQ", "tormentIn", "tormentNotIn", "tormentGT", "tormentGTE", "tormentLT", "tormentLTE", "insanity", "insanityNEQ", "insanityIn", "insanityNotIn", "insanityGT", "insanityGTE", "insanityLT", "insanityLTE", "lumi", "lumiNEQ", "lumiIn", "lumiNotIn", "lumiGT", "lumiGTE", "lumiLT", "lumiLTE", "courage", "courageNEQ", "courageIn", "courageNotIn", "courageGT", "courageGTE", "courageLT", "courageLTE", "understanding", "understandingNEQ", "understandingIn", "understandingNotIn", "understandingGT", "understandingGTE", "understandingLT", "understandingLTE", "settlementID", "settlementIDNEQ", "settlementIDIn", "settlementIDNotIn", "settlementIDIsNil", "settlementIDNotNil", "hasSettlement", "hasSettlementWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "born", "bornNEQ", "bornIn", "bornNotIn", "bornGT", "bornGTE", "bornLT", "bornLTE", "gender", "genderNEQ", "genderIn", "genderNotIn", "huntxp", "huntxpNEQ", "huntxpIn", "huntxpNotIn", "huntxpGT", "huntxpGTE", "huntxpLT", "huntxpLTE", "survival", "survivalNEQ", "survivalIn", "survivalNotIn", "survivalGT", "survivalGTE", "survivalLT", "survivalLTE", "movement", "movementNEQ", "movementIn", "movementNotIn", "movementGT", "movementGTE", "movementLT", "movementLTE", "accuracy", "accuracyNEQ", "accuracyIn", "accuracyNotIn", "accuracyGT", "accuracyGTE", "accuracyLT", "accuracyLTE", "strength", "strengthNEQ", "strengthIn", "strengthNotIn", "strengthGT", "strengthGTE", "strengthLT", "strengthLTE", "evasion", "evasionNEQ", "evasionIn", "evasionNotIn", "evasionGT", "evasionGTE", "evasionLT", "evasionLTE", "luck", "luckNEQ", "luckIn", "luckNotIn", "luckGT", "luckGTE", "luckLT", "luckLTE", "speed", "speedNEQ", "speedIn", "speedNotIn", "speedGT", "speedGTE", "speedLT", "speedLTE", "systemicpressure", "systemicpressureNEQ", "systemicpressureIn", "systemicpressureNotIn", "systemicpressureGT", "systemicpressureGTE", "systemicpressureLT", "systemicpressureLTE", "torment", "tormentNEQ", "tormentIn", "tormentNotIn", "tormentGT", "tormentGTE", "tormentLT", "tormentLTE", "insanity", "insanityNEQ", "insanityIn", "insanityNotIn", "insanityGT", "insanityGTE", "insanityLT", "insanityLTE", "lumi", "lumiNEQ", "lumiIn", "lumiNotIn", "lumiGT", "lumiGTE", "lumiLT", "lumiLTE", "courage", "courageNEQ", "courageIn", "courageNotIn", "courageGT", "courageGTE", "courageLT", "courageLTE", "understanding", "understandingNEQ", "understandingIn", "understandingNotIn", "understandingGT", "understandingGTE", "understandingLT", "understandingLTE", "status", "statusNEQ", "statusIn", "statusNotIn", "statusChangeYear", "statusChangeYearNEQ", "statusChangeYearIn", "statusChangeYearNotIn", "statusChangeYearGT", "statusChangeYearGTE", "statusChangeYearLT", "statusChangeYearLTE", "settlementID", "settlementIDNEQ", "settlementIDIn", "settlementIDNotIn", "settlementIDIsNil", "settlementIDNotNil", "hasSettlement", "hasSettlementWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6689,6 +6904,90 @@ func (ec *executionContext) unmarshalInputSurvivorWhereInput(ctx context.Context
 				return it, err
 			}
 			it.UnderstandingLTE = data
+		case "status":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalOSurvivorStatus2ᚖgithubᚗcomᚋfailuretoloadᚋdatamonsterᚋentᚋsurvivorᚐStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Status = data
+		case "statusNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusNEQ"))
+			data, err := ec.unmarshalOSurvivorStatus2ᚖgithubᚗcomᚋfailuretoloadᚋdatamonsterᚋentᚋsurvivorᚐStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusNEQ = data
+		case "statusIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusIn"))
+			data, err := ec.unmarshalOSurvivorStatus2ᚕgithubᚗcomᚋfailuretoloadᚋdatamonsterᚋentᚋsurvivorᚐStatusᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusIn = data
+		case "statusNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusNotIn"))
+			data, err := ec.unmarshalOSurvivorStatus2ᚕgithubᚗcomᚋfailuretoloadᚋdatamonsterᚋentᚋsurvivorᚐStatusᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusNotIn = data
+		case "statusChangeYear":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusChangeYear"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusChangeYear = data
+		case "statusChangeYearNEQ":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusChangeYearNEQ"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusChangeYearNEQ = data
+		case "statusChangeYearIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusChangeYearIn"))
+			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusChangeYearIn = data
+		case "statusChangeYearNotIn":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusChangeYearNotIn"))
+			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusChangeYearNotIn = data
+		case "statusChangeYearGT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusChangeYearGT"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusChangeYearGT = data
+		case "statusChangeYearGTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusChangeYearGTE"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusChangeYearGTE = data
+		case "statusChangeYearLT":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusChangeYearLT"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusChangeYearLT = data
+		case "statusChangeYearLTE":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusChangeYearLTE"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusChangeYearLTE = data
 		case "settlementID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("settlementID"))
 			data, err := ec.unmarshalOID2ᚖint(ctx, v)
@@ -6850,7 +7149,7 @@ func (ec *executionContext) unmarshalInputUpdateSurvivorInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "born", "gender", "huntxp", "survival", "movement", "accuracy", "strength", "evasion", "luck", "speed", "systemicpressure", "torment", "insanity", "lumi", "courage", "understanding", "settlementID", "clearSettlement"}
+	fieldsInOrder := [...]string{"name", "born", "gender", "huntxp", "survival", "movement", "accuracy", "strength", "evasion", "luck", "speed", "systemicpressure", "torment", "insanity", "lumi", "courage", "understanding", "status", "statusChangeYear", "settlementID", "clearSettlement"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6976,6 +7275,20 @@ func (ec *executionContext) unmarshalInputUpdateSurvivorInput(ctx context.Contex
 				return it, err
 			}
 			it.Understanding = data
+		case "status":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalOSurvivorStatus2ᚖgithubᚗcomᚋfailuretoloadᚋdatamonsterᚋentᚋsurvivorᚐStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Status = data
+		case "statusChangeYear":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusChangeYear"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StatusChangeYear = data
 		case "settlementID":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("settlementID"))
 			data, err := ec.unmarshalOID2ᚖint(ctx, v)
@@ -7057,6 +7370,10 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "updateSurvivor":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updateSurvivor(ctx, field)
+			})
+		case "deleteSurvivor":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteSurvivor(ctx, field)
 			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -7477,6 +7794,16 @@ func (ec *executionContext) _Survivor(ctx context.Context, sel ast.SelectionSet,
 			}
 		case "understanding":
 			out.Values[i] = ec._Survivor_understanding(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "status":
+			out.Values[i] = ec._Survivor_status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "statusChangeYear":
+			out.Values[i] = ec._Survivor_statusChangeYear(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -8073,6 +8400,16 @@ func (ec *executionContext) marshalNSurvivorOrderField2ᚖgithubᚗcomᚋfailure
 		}
 		return graphql.Null
 	}
+	return v
+}
+
+func (ec *executionContext) unmarshalNSurvivorStatus2githubᚗcomᚋfailuretoloadᚋdatamonsterᚋentᚋsurvivorᚐStatus(ctx context.Context, v interface{}) (survivor.Status, error) {
+	var res survivor.Status
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSurvivorStatus2githubᚗcomᚋfailuretoloadᚋdatamonsterᚋentᚋsurvivorᚐStatus(ctx context.Context, sel ast.SelectionSet, v survivor.Status) graphql.Marshaler {
 	return v
 }
 
@@ -8804,6 +9141,89 @@ func (ec *executionContext) unmarshalOSurvivorOrder2ᚖgithubᚗcomᚋfailuretol
 	}
 	res, err := ec.unmarshalInputSurvivorOrder(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOSurvivorStatus2ᚕgithubᚗcomᚋfailuretoloadᚋdatamonsterᚋentᚋsurvivorᚐStatusᚄ(ctx context.Context, v interface{}) ([]survivor.Status, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]survivor.Status, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNSurvivorStatus2githubᚗcomᚋfailuretoloadᚋdatamonsterᚋentᚋsurvivorᚐStatus(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOSurvivorStatus2ᚕgithubᚗcomᚋfailuretoloadᚋdatamonsterᚋentᚋsurvivorᚐStatusᚄ(ctx context.Context, sel ast.SelectionSet, v []survivor.Status) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNSurvivorStatus2githubᚗcomᚋfailuretoloadᚋdatamonsterᚋentᚋsurvivorᚐStatus(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOSurvivorStatus2ᚖgithubᚗcomᚋfailuretoloadᚋdatamonsterᚋentᚋsurvivorᚐStatus(ctx context.Context, v interface{}) (*survivor.Status, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(survivor.Status)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOSurvivorStatus2ᚖgithubᚗcomᚋfailuretoloadᚋdatamonsterᚋentᚋsurvivorᚐStatus(ctx context.Context, sel ast.SelectionSet, v *survivor.Status) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOSurvivorWhereInput2ᚕᚖgithubᚗcomᚋfailuretoloadᚋdatamonsterᚋentᚐSurvivorWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.SurvivorWhereInput, error) {

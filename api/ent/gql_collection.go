@@ -259,6 +259,16 @@ func (s *SurvivorQuery) collectField(ctx context.Context, oneNode bool, opCtx *g
 				selectedFields = append(selectedFields, survivor.FieldUnderstanding)
 				fieldSeen[survivor.FieldUnderstanding] = struct{}{}
 			}
+		case "status":
+			if _, ok := fieldSeen[survivor.FieldStatus]; !ok {
+				selectedFields = append(selectedFields, survivor.FieldStatus)
+				fieldSeen[survivor.FieldStatus] = struct{}{}
+			}
+		case "statusChangeYear":
+			if _, ok := fieldSeen[survivor.FieldStatusChangeYear]; !ok {
+				selectedFields = append(selectedFields, survivor.FieldStatusChangeYear)
+				fieldSeen[survivor.FieldStatusChangeYear] = struct{}{}
+			}
 		case "settlementID":
 			if _, ok := fieldSeen[survivor.FieldSettlementID]; !ok {
 				selectedFields = append(selectedFields, survivor.FieldSettlementID)

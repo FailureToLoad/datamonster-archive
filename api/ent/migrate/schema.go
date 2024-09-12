@@ -44,6 +44,8 @@ var (
 		{Name: "lumi", Type: field.TypeInt, Default: 0},
 		{Name: "courage", Type: field.TypeInt, Default: 0},
 		{Name: "understanding", Type: field.TypeInt, Default: 0},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"alive", "dead", "ceased_to_exist", "retired", "skip_hunt"}, Default: "alive"},
+		{Name: "status_change_year", Type: field.TypeInt, Default: 0},
 		{Name: "settlement_id", Type: field.TypeInt, Nullable: true},
 	}
 	// SurvivorsTable holds the schema information for the "survivors" table.
@@ -54,7 +56,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "survivors_settlements_population",
-				Columns:    []*schema.Column{SurvivorsColumns[18]},
+				Columns:    []*schema.Column{SurvivorsColumns[20]},
 				RefColumns: []*schema.Column{SettlementsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

@@ -133,6 +133,11 @@ func Understanding(v int) predicate.Survivor {
 	return predicate.Survivor(sql.FieldEQ(FieldUnderstanding, v))
 }
 
+// StatusChangeYear applies equality check predicate on the "status_change_year" field. It's identical to StatusChangeYearEQ.
+func StatusChangeYear(v int) predicate.Survivor {
+	return predicate.Survivor(sql.FieldEQ(FieldStatusChangeYear, v))
+}
+
 // SettlementID applies equality check predicate on the "settlement_id" field. It's identical to SettlementIDEQ.
 func SettlementID(v int) predicate.Survivor {
 	return predicate.Survivor(sql.FieldEQ(FieldSettlementID, v))
@@ -821,6 +826,66 @@ func UnderstandingLT(v int) predicate.Survivor {
 // UnderstandingLTE applies the LTE predicate on the "understanding" field.
 func UnderstandingLTE(v int) predicate.Survivor {
 	return predicate.Survivor(sql.FieldLTE(FieldUnderstanding, v))
+}
+
+// StatusEQ applies the EQ predicate on the "status" field.
+func StatusEQ(v Status) predicate.Survivor {
+	return predicate.Survivor(sql.FieldEQ(FieldStatus, v))
+}
+
+// StatusNEQ applies the NEQ predicate on the "status" field.
+func StatusNEQ(v Status) predicate.Survivor {
+	return predicate.Survivor(sql.FieldNEQ(FieldStatus, v))
+}
+
+// StatusIn applies the In predicate on the "status" field.
+func StatusIn(vs ...Status) predicate.Survivor {
+	return predicate.Survivor(sql.FieldIn(FieldStatus, vs...))
+}
+
+// StatusNotIn applies the NotIn predicate on the "status" field.
+func StatusNotIn(vs ...Status) predicate.Survivor {
+	return predicate.Survivor(sql.FieldNotIn(FieldStatus, vs...))
+}
+
+// StatusChangeYearEQ applies the EQ predicate on the "status_change_year" field.
+func StatusChangeYearEQ(v int) predicate.Survivor {
+	return predicate.Survivor(sql.FieldEQ(FieldStatusChangeYear, v))
+}
+
+// StatusChangeYearNEQ applies the NEQ predicate on the "status_change_year" field.
+func StatusChangeYearNEQ(v int) predicate.Survivor {
+	return predicate.Survivor(sql.FieldNEQ(FieldStatusChangeYear, v))
+}
+
+// StatusChangeYearIn applies the In predicate on the "status_change_year" field.
+func StatusChangeYearIn(vs ...int) predicate.Survivor {
+	return predicate.Survivor(sql.FieldIn(FieldStatusChangeYear, vs...))
+}
+
+// StatusChangeYearNotIn applies the NotIn predicate on the "status_change_year" field.
+func StatusChangeYearNotIn(vs ...int) predicate.Survivor {
+	return predicate.Survivor(sql.FieldNotIn(FieldStatusChangeYear, vs...))
+}
+
+// StatusChangeYearGT applies the GT predicate on the "status_change_year" field.
+func StatusChangeYearGT(v int) predicate.Survivor {
+	return predicate.Survivor(sql.FieldGT(FieldStatusChangeYear, v))
+}
+
+// StatusChangeYearGTE applies the GTE predicate on the "status_change_year" field.
+func StatusChangeYearGTE(v int) predicate.Survivor {
+	return predicate.Survivor(sql.FieldGTE(FieldStatusChangeYear, v))
+}
+
+// StatusChangeYearLT applies the LT predicate on the "status_change_year" field.
+func StatusChangeYearLT(v int) predicate.Survivor {
+	return predicate.Survivor(sql.FieldLT(FieldStatusChangeYear, v))
+}
+
+// StatusChangeYearLTE applies the LTE predicate on the "status_change_year" field.
+func StatusChangeYearLTE(v int) predicate.Survivor {
+	return predicate.Survivor(sql.FieldLTE(FieldStatusChangeYear, v))
 }
 
 // SettlementIDEQ applies the EQ predicate on the "settlement_id" field.
