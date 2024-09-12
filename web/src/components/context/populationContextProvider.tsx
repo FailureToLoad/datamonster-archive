@@ -3,6 +3,7 @@ import {DefaultSurvivor} from '@/lib/services/survivor';
 import {ReactNode, useState} from 'react';
 import {PopulationContextType, PopulationContext} from './populationContext';
 
+export const PopulationQueryKey = 'population';
 export default function PopulationContextProvider({
   children,
 }: {
@@ -12,7 +13,6 @@ export default function PopulationContextProvider({
     useState<Survivor>(DefaultSurvivor);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [edit, setEdit] = useState(true);
-
   const context: PopulationContextType = {
     currentSurvivor,
     setCurrentSurvivor,
@@ -21,6 +21,7 @@ export default function PopulationContextProvider({
     edit,
     setEdit,
   };
+
   return (
     <PopulationContext.Provider value={context}>
       {children}
