@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	clerkhttp "github.com/clerk/clerk-sdk-go/v2/http"
+	"github.com/failuretoload/datamonster/request"
 	"github.com/failuretoload/datamonster/response"
 	"github.com/failuretoload/datamonster/settlement"
 	postgres "github.com/failuretoload/datamonster/store/postgres"
@@ -48,7 +49,7 @@ type Server struct {
 	Mux *chi.Mux
 }
 
-func NewServer(stc *settlement.Controller, srvc *survivor.Controller) Server {
+func NewServer(settlements *settlement.Controller, survivors *survivor.Controller) Server {
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
@@ -80,7 +81,7 @@ func NewServer(stc *settlement.Controller, srvc *survivor.Controller) Server {
 		_, _ = w.Write([]byte("ready"))
 	})
 
-	router.Mount("/api", protectedRoutes(stc, srvc))
+	router.Mount("/api", protectedRoutes(settlements, survivors))
 	return Server{
 		Mux: router,
 	}
@@ -167,7 +168,7 @@ func UserIDExtractor(next http.Handler) http.Handler {
 			response.Unauthorized(ctx, rw, fmt.Errorf("user id not found"))
 			return
 		}
-		ctx = context.WithValue(req.Context(), config.UserIDKey, userID)
+		ctx = context.WithValue(req.Context(), request.UserIDKey, userID)
 		next.ServeHTTP(rw, req.WithContext(ctx))
 	})
 }
