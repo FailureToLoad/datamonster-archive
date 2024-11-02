@@ -6,22 +6,8 @@ import (
 	"os"
 )
 
-type CTXUserID string
-
-const (
-	UserIDKey CTXUserID = "userId"
-)
-
 func Key() string {
 	return getEnvVar("KEY")
-}
-
-func PGConn() string {
-	return getEnvVar("CONN")
-}
-
-func Mode() string {
-	return getEnvVar("MODE")
 }
 
 func getEnvVar(key string) string {
