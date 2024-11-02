@@ -11,17 +11,17 @@ import (
 )
 
 func InitConnPool(ctx context.Context) *pgxpool.Pool {
-	dbconfig, err := pgxpool.ParseConfig(os.Getenv("CONN_STRING"))
+	config, err := pgxpool.ParseConfig(os.Getenv("CONN_STRING"))
 	if err != nil {
 		log.Fatalf("Unable to parse db config: %v\n", err)
 	}
-	dbconfig.AfterConnect = func(_ context.Context, conn *pgx.Conn) error {
+	config.AfterConnect = func(_ context.Context, conn *pgx.Conn) error {
 		pgxuuid.Register(conn.TypeMap())
 		return nil
 	}
-	dbpool, err := pgxpool.NewWithConfig(ctx, dbconfig)
+	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		log.Fatalf("Unable to create connection pool: %v\n", err)
 	}
-	return dbpool
+	return pool
 }
