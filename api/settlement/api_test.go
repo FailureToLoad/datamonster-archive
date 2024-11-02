@@ -9,6 +9,8 @@ import (
 	"github.com/pashagolub/pgxmock/v4"
 	"io"
 	"net/http/httptest"
+	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
@@ -20,8 +22,29 @@ var (
 	settlementCols = []string{"id", "owner", "name", "survival_limit", "departing_survival", "collective_cognition", "year"}
 )
 
+func normalizeSQL(sql string) string {
+	// Remove all whitespace between symbols and parentheses
+	re := regexp.MustCompile(`\s*([\(\),])\s*`)
+	sql = re.ReplaceAllString(sql, "$1")
+
+	// Collapse multiple spaces into single space
+	re = regexp.MustCompile(`\s+`)
+	return strings.TrimSpace(re.ReplaceAllString(sql, " "))
+}
+
+type sqlMatcher struct{}
+
+func (m sqlMatcher) Match(expectedSQL, actualSQL string) error {
+	if normalizeSQL(expectedSQL) != normalizeSQL(actualSQL) {
+		return fmt.Errorf("SQL does not match\nExpected: %s\nActual: %s",
+			normalizeSQL(expectedSQL),
+			normalizeSQL(actualSQL))
+	}
+	return nil
+}
+
 func setupTest(t *testing.T) (*Controller, pgxmock.PgxPoolIface, *chi.Mux) {
-	mock, err := pgxmock.NewPool()
+	mock, err := pgxmock.NewPool(pgxmock.QueryMatcherOption(sqlMatcher{}))
 	if err != nil {
 		t.Fatalf("failed to create mock: %v", err)
 	}
@@ -41,9 +64,9 @@ func TestGetSettlements_ReturnsSettlementsList(t *testing.T) {
 		{2, testUserID, "Wait, we get insanity for the croc?", 1, 0, 0, 1},
 	}
 	rows := pgxmock.NewRows(settlementCols).AddRows(values...)
-	db.ExpectQuery(`SELECT \* FROM campaign\.settlement WHERE owner='userId'`).
-		WillReturnRows(rows).
-		RowsWillBeClosed()
+	db.ExpectQuery("SELECT * FROM campaign.settlement WHERE owner=$1").
+		WithArgs(testUserID).
+		WillReturnRows(rows)
 
 	req := httptest.NewRequest("GET", "/settlements", nil)
 	ctx := req.Context()
@@ -63,7 +86,8 @@ func TestGetSettlements_ReportsScanErrors(t *testing.T) {
 	_, db, router := setupTest(t)
 	defer db.Close()
 
-	db.ExpectQuery(`SELECT \* FROM campaign\.settlement WHERE owner='userId'`).
+	db.ExpectQuery("SELECT * FROM campaign.settlement WHERE owner=$1").
+		WithArgs(testUserID).
 		WillReturnError(fmt.Errorf("scan error"))
 
 	req := httptest.NewRequest("GET", "/settlements", nil)
@@ -82,7 +106,8 @@ func TestGetSettlements_ReportsConnectionErrors(t *testing.T) {
 	_, db, router := setupTest(t)
 	defer db.Close()
 
-	db.ExpectQuery(`SELECT \* FROM campaign\.settlement WHERE owner='userId'`).
+	db.ExpectQuery("SELECT * FROM campaign.settlement WHERE owner=$1").
+		WithArgs(testUserID).
 		WillReturnError(fmt.Errorf("query error"))
 
 	req := httptest.NewRequest("GET", "/settlements", nil)
@@ -101,7 +126,8 @@ func TestCreateSettlement_ReturnsASettlement(t *testing.T) {
 	_, db, router := setupTest(t)
 	defer db.Close()
 
-	db.ExpectQuery(`INSERT INTO campaign\.settlement \(owner, name, survival_limit, departing_survival, collective_cognition, year\) VALUES \('userId', 'Fun Forever', 1, 0, 0, 1\) RETURNING id`).
+	db.ExpectQuery("INSERT INTO campaign.settlement (owner, name, survival_limit, departing_survival, collective_cognition, year) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id").
+		WithArgs(testUserID, "Fun Forever", 1, 0, 0, 1).
 		WillReturnRows(pgxmock.NewRows([]string{"id"}).AddRow(1))
 
 	settlementRequest := CreateSettlementRequest{
@@ -170,7 +196,8 @@ func TestCreateSettlement_ReportsCreationErrors(t *testing.T) {
 	_, db, router := setupTest(t)
 	defer db.Close()
 
-	db.ExpectQuery(`INSERT INTO campaign\.settlement \(owner, name, survival_limit, departing_survival, collective_cognition, year\) VALUES \('userId', 'Fun time', 1, 0, 0, 1\) RETURNING id`).
+	db.ExpectQuery("INSERT INTO campaign.settlement (owner, name, survival_limit, departing_survival, collective_cognition, year) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id").
+		WithArgs(testUserID, "Fun time", 1, 0, 0, 1).
 		WillReturnError(fmt.Errorf("insert error"))
 
 	createRequest := CreateSettlementRequest{
@@ -194,7 +221,7 @@ func TestGetSettlement_ReturnsOneSettlement(t *testing.T) {
 	_, db, router := setupTest(t)
 	defer db.Close()
 
-	db.ExpectQuery(`SELECT \* FROM campaign\.settlement WHERE id = \$1 && owner = \$2 LIMIT 1`).
+	db.ExpectQuery("SELECT * FROM campaign.settlement WHERE id = $1 AND owner = $2 LIMIT 1").
 		WithArgs("1", testUserID).
 		WillReturnRows(pgxmock.NewRows(settlementCols).
 			AddRow(1, "owner", "Fun Forever", 1, 0, 0, 1))
@@ -222,7 +249,7 @@ func TestGetSettlement_ReportsScanErrors(t *testing.T) {
 	_, db, router := setupTest(t)
 	defer db.Close()
 
-	db.ExpectQuery(`SELECT \* FROM campaign\.settlement WHERE id = \$1 && owner = \$2 LIMIT 1`).
+	db.ExpectQuery("SELECT * FROM campaign.settlement WHERE id = $1 AND owner = $2 LIMIT 1").
 		WithArgs("1", testUserID).
 		WillReturnError(fmt.Errorf("scan error"))
 

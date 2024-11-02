@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http/httptest"
+	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
@@ -13,12 +15,32 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func normalizeSQL(sql string) string {
+	// Remove all whitespace between symbols and parentheses
+	re := regexp.MustCompile(`\s*([\(\),])\s*`)
+	sql = re.ReplaceAllString(sql, "$1")
+
+	// Collapse multiple spaces into single space
+	re = regexp.MustCompile(`\s+`)
+	return strings.TrimSpace(re.ReplaceAllString(sql, " "))
+}
+
+type sqlMatcher struct{}
+
+func (m sqlMatcher) Match(expectedSQL, actualSQL string) error {
+	if normalizeSQL(expectedSQL) != normalizeSQL(actualSQL) {
+		return fmt.Errorf("SQL does not match\nExpected: %s\nActual: %s",
+			normalizeSQL(expectedSQL),
+			normalizeSQL(actualSQL))
+	}
+	return nil
+}
+
 func setupTest(t *testing.T) (*Controller, pgxmock.PgxPoolIface, *chi.Mux) {
-	mock, err := pgxmock.NewPool()
+	mock, err := pgxmock.NewPool(pgxmock.QueryMatcherOption(sqlMatcher{}))
 	if err != nil {
 		t.Fatalf("failed to create mock: %v", err)
 	}
-
 	controller := NewController(mock)
 	router := chi.NewRouter()
 	controller.RegisterRoutes(router)
@@ -44,7 +66,8 @@ func TestGetSurvivors_ReturnsSurvivorList(t *testing.T) {
 
 	rows := pgxmock.NewRows(survivorCols).AddRows(values...)
 
-	db.ExpectQuery(`SELECT \* FROM campaign\.survivor WHERE settlement = 1`).
+	db.ExpectQuery("SELECT * FROM campaign.survivor WHERE settlement = $1").
+		WithArgs(1).
 		WillReturnRows(rows)
 
 	req := httptest.NewRequest("GET", "/settlements/1/survivors", nil)
@@ -53,7 +76,6 @@ func TestGetSurvivors_ReturnsSurvivorList(t *testing.T) {
 
 	resp := w.Result()
 	assert.Equal(t, 200, resp.StatusCode, "200 response should be returned")
-
 	body, _ := io.ReadAll(resp.Body)
 	dtoList := []DTO{}
 	_ = json.Unmarshal(body, &dtoList)
@@ -64,9 +86,8 @@ func TestCreateSurvivor_ReturnsNoContent(t *testing.T) {
 	_, db, router := setupTest(t)
 	defer db.Close()
 
-	db.ExpectExec(`INSERT INTO campaign\.survivor \(settlement, name, birth, huntxp, gender, survival, 
-        movement, accuracy, strength, evasion, luck, speed, insanity, systemic_pressure, torment, lumi, courage, understanding\) 
-        VALUES \(1, 'Zach', 1, 1, 'M', 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1\)`).
+	db.ExpectExec("INSERT INTO campaign.survivor (settlement, name, birth, huntxp, gender, survival, movement, accuracy, strength, evasion, luck, speed, insanity, systemic_pressure, torment, lumi, courage, understanding) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)").
+		WithArgs(1, "Zach", 1, 1, "M", 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1).
 		WillReturnResult(pgxmock.NewResult("INSERT", 1))
 
 	survivor := DTO{
@@ -93,7 +114,6 @@ func TestCreateSurvivor_ReturnsNoContent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to marshal JSON: %v", err)
 	}
-
 	req := httptest.NewRequest("POST", "/settlements/1/survivors", bytes.NewBuffer(reqBody))
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -117,9 +137,8 @@ func TestCreateSurvivor_RequiresAUniqueName(t *testing.T) {
 	_, db, router := setupTest(t)
 	defer db.Close()
 
-	db.ExpectExec(`INSERT INTO campaign\.survivor \(settlement, name, birth, huntxp, gender, survival, 
-        movement, accuracy, strength, evasion, luck, speed, insanity, systemic_pressure, torment, lumi, courage, understanding\) 
-        VALUES \(1, 'Zach', 1, 1, 'M', 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1\)`).
+	db.ExpectExec("INSERT INTO campaign.survivor (settlement, name, birth, huntxp, gender, survival, movement, accuracy, strength, evasion, luck, speed, insanity, systemic_pressure, torment, lumi, courage, understanding) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)").
+		WithArgs(1, "Zach", 1, 1, "M", 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1).
 		WillReturnError(fmt.Errorf("duplicate key value"))
 
 	survivor := DTO{
@@ -147,7 +166,6 @@ func TestCreateSurvivor_RequiresAUniqueName(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to marshal JSON: %v", err)
 	}
-
 	req := httptest.NewRequest("POST", "/settlements/1/survivors", bytes.NewBuffer(reqBody))
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -171,7 +189,6 @@ func TestCreateSurvivor_RequiresAValidBody(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to marshal JSON: %v", err)
 	}
-
 	req := httptest.NewRequest("POST", "/settlements/1/survivors", bytes.NewBuffer(reqBody))
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -184,9 +201,8 @@ func TestCreateSurvivor_CommunicatesDbIssues(t *testing.T) {
 	_, db, router := setupTest(t)
 	defer db.Close()
 
-	db.ExpectExec(`INSERT INTO campaign\.survivor \(settlement, name, birth, huntxp, gender, survival, 
-        movement, accuracy, strength, evasion, luck, speed, insanity, systemic_pressure, torment, lumi, courage, understanding\) 
-        VALUES \(1, 'Zach', 1, 1, 'M', 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1\)`).
+	db.ExpectExec("INSERT INTO campaign.survivor (settlement, name, birth, huntxp, gender, survival, movement, accuracy, strength, evasion, luck, speed, insanity, systemic_pressure, torment, lumi, courage, understanding) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)").
+		WithArgs(1, "Zach", 1, 1, "M", 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1).
 		WillReturnError(fmt.Errorf("well that ain't right"))
 
 	survivor := DTO{
@@ -214,7 +230,6 @@ func TestCreateSurvivor_CommunicatesDbIssues(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to marshal JSON: %v", err)
 	}
-
 	req := httptest.NewRequest("POST", "/settlements/1/survivors", bytes.NewBuffer(reqBody))
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)

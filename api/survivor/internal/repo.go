@@ -41,28 +41,34 @@ func NewRepo(d store.Connection) *PGRepo {
 }
 
 func (r PGRepo) CreateSurvivor(ctx context.Context, s Survivor) error {
-	insert := "INSERT INTO campaign.survivor (settlement, name, birth, huntxp, gender, survival, movement, accuracy, strength, evasion, luck, speed, insanity, systemic_pressure, torment, lumi, courage, understanding) " +
-		fmt.Sprintf("VALUES (%d, '%s', %d, %d, '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
-			s.Settlement,
-			s.Name,
-			s.Birth,
-			s.HuntXp,
-			s.Gender,
-			s.Survival,
-			s.Movement,
-			s.Accuracy,
-			s.Strength,
-			s.Evasion,
-			s.Luck,
-			s.Speed,
-			s.Insanity,
-			s.SystemicPressure,
-			s.Torment,
-			s.Lumi,
-			s.Courage,
-			s.Understanding,
-		)
-	_, err := r.pool.Exec(ctx, insert)
+	query := `
+        INSERT INTO campaign.survivor (
+            settlement, name, birth, huntxp, gender, survival, 
+            movement, accuracy, strength, evasion, luck, speed, 
+            insanity, systemic_pressure, torment, lumi, courage, understanding
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`
+
+	_, err := r.pool.Exec(ctx, query,
+		s.Settlement,
+		s.Name,
+		s.Birth,
+		s.HuntXp,
+		s.Gender,
+		s.Survival,
+		s.Movement,
+		s.Accuracy,
+		s.Strength,
+		s.Evasion,
+		s.Luck,
+		s.Speed,
+		s.Insanity,
+		s.SystemicPressure,
+		s.Torment,
+		s.Lumi,
+		s.Courage,
+		s.Understanding,
+	)
+
 	if err != nil {
 		logString := fmt.Errorf("unable to create survivor in settlement %d: %w", s.Settlement, err)
 		log.Default().Println(logString)
@@ -74,14 +80,14 @@ func (r PGRepo) CreateSurvivor(ctx context.Context, s Survivor) error {
 }
 
 func (r PGRepo) GetAllSurvivorsForSettlement(ctx context.Context, settlementID int) ([]Survivor, error) {
-	query := fmt.Sprintf("SELECT * FROM campaign.survivor WHERE settlement = %d", settlementID)
-	survivors, err := r.find(ctx, query)
+	query := "SELECT * FROM campaign.survivor WHERE settlement = $1"
+	survivors, err := r.find(ctx, query, settlementID)
 	return survivors, err
 }
 
-func (r PGRepo) find(ctx context.Context, query string) ([]Survivor, error) {
+func (r PGRepo) find(ctx context.Context, query string, args ...interface{}) ([]Survivor, error) {
 	log.Default().Println(query)
-	rows, queryErr := r.pool.Query(ctx, query)
+	rows, queryErr := r.pool.Query(ctx, query, args...)
 	if queryErr != nil {
 		log.Default().Println(queryErr.Error())
 		return nil, queryErr

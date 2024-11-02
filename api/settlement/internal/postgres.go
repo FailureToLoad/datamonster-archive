@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"fmt"
 	"github.com/failuretoload/datamonster/store"
 )
 
@@ -25,12 +24,13 @@ func New(d store.Connection) *Repo {
 }
 
 func (r Repo) Select(ctx context.Context, userID string) ([]Settlement, error) {
-	query := fmt.Sprintf("SELECT * FROM campaign.settlement WHERE owner='%s'", userID)
-	rows, queryErr := r.pool.Query(ctx, query)
+	query := "SELECT * FROM campaign.settlement WHERE owner=$1"
+	rows, queryErr := r.pool.Query(ctx, query, userID)
 	if queryErr != nil {
 		return []Settlement{}, queryErr
 	}
 	defer rows.Close()
+
 	settlements := []Settlement{}
 	for rows.Next() {
 		var s Settlement
@@ -44,17 +44,36 @@ func (r Repo) Select(ctx context.Context, userID string) ([]Settlement, error) {
 }
 
 func (r Repo) Get(ctx context.Context, id, userID string) (Settlement, error) {
-	query := `SELECT * FROM campaign.settlement WHERE id = $1 && owner = $2 LIMIT 1`
+	query := "SELECT * FROM campaign.settlement WHERE id = $1 AND owner = $2 LIMIT 1"
 	var s Settlement
-	err := r.pool.QueryRow(ctx, query, id, userID).Scan(&s.ID, &s.Owner, &s.Name, &s.SurvivalLimit, &s.DepartingSurvival, &s.CollectiveCognition, &s.CurrentYear)
+	err := r.pool.QueryRow(ctx, query, id, userID).Scan(
+		&s.ID,
+		&s.Owner,
+		&s.Name,
+		&s.SurvivalLimit,
+		&s.DepartingSurvival,
+		&s.CollectiveCognition,
+		&s.CurrentYear,
+	)
 	return s, err
 }
 
 func (r Repo) Insert(ctx context.Context, s Settlement) (int, error) {
-	insert := "INSERT INTO campaign.settlement (owner, name, survival_limit, departing_survival, collective_cognition, year) "
-	values := fmt.Sprintf("VALUES ('%s', '%s', %d, %d, %d, %d) RETURNING id", s.Owner, s.Name, s.SurvivalLimit, s.DepartingSurvival, s.CollectiveCognition, s.CurrentYear)
-	query := insert + values
-	id := 0
-	err := r.pool.QueryRow(ctx, query).Scan(&id)
+	query := `
+        INSERT INTO campaign.settlement 
+            (owner, name, survival_limit, departing_survival, collective_cognition, year)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING id`
+
+	var id int
+	err := r.pool.QueryRow(ctx, query,
+		s.Owner,
+		s.Name,
+		s.SurvivalLimit,
+		s.DepartingSurvival,
+		s.CollectiveCognition,
+		s.CurrentYear,
+	).Scan(&id)
+
 	return id, err
 }
