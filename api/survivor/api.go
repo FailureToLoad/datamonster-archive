@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/failuretoload/datamonster/survivor/domain"
 	"net/http"
 	"strconv"
 
@@ -96,15 +97,15 @@ type DTO struct {
 	Understanding    int     `json:"understanding"`
 }
 
-func dtoFromDomain(s repo.Survivor) DTO {
+func dtoFromDomain(s domain.Survivor) DTO {
 	return DTO(s)
 }
 
-func domainFromDTO(s DTO) repo.Survivor {
-	return repo.Survivor(s)
+func domainFromDTO(s DTO) domain.Survivor {
+	return domain.Survivor(s)
 }
 
-func dtoListFromDomain(s []repo.Survivor) []DTO {
+func dtoListFromDomain(s []domain.Survivor) []DTO {
 	survivors := make([]DTO, len(s))
 	for i, v := range s {
 		survivors[i] = dtoFromDomain(v)

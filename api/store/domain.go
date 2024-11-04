@@ -28,7 +28,6 @@ type Connection interface {
 	QueryRow(ctx context.Context, sql string, optionsAndArgs ...interface{}) pgx.Row
 }
 
-// ConnectionV2 defines the common database operations
 type DAO interface {
 	Query(ctx context.Context, query string, args ...interface{}) (Rows, error)
 	QueryRow(ctx context.Context, query string, args ...interface{}) Row

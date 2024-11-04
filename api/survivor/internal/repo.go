@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"fmt"
+	"github.com/failuretoload/datamonster/survivor/domain"
 	"log"
 	"strings"
 
@@ -13,34 +14,11 @@ type PGRepo struct {
 	pool store.Connection
 }
 
-type Survivor struct {
-	ID               int     `db:"id"`
-	Settlement       int     `db:"settlement"`
-	Name             string  `db:"name"`
-	Birth            int     `db:"birth"`
-	Gender           string  `db:"gender"`
-	Status           *string `db:"status"`
-	HuntXp           int     `db:"huntxp"`
-	Survival         int     `db:"survival"`
-	Movement         int     `db:"movement"`
-	Accuracy         int     `db:"accuracy"`
-	Strength         int     `db:"strength"`
-	Evasion          int     `db:"evasion"`
-	Luck             int     `db:"luck"`
-	Speed            int     `db:"speed"`
-	Insanity         int     `db:"insanity"`
-	SystemicPressure int     `db:"systemic_pressure"`
-	Torment          int     `db:"torment"`
-	Lumi             int     `db:"lumi"`
-	Courage          int     `db:"courage"`
-	Understanding    int     `db:"understanding"`
-}
-
 func NewRepo(d store.Connection) *PGRepo {
 	return &PGRepo{pool: d}
 }
 
-func (r PGRepo) CreateSurvivor(ctx context.Context, s Survivor) error {
+func (r PGRepo) CreateSurvivor(ctx context.Context, s domain.Survivor) error {
 	query := `
         INSERT INTO campaign.survivor (
             settlement, name, birth, huntxp, gender, survival, 
@@ -79,13 +57,13 @@ func (r PGRepo) CreateSurvivor(ctx context.Context, s Survivor) error {
 	return err
 }
 
-func (r PGRepo) GetAllSurvivorsForSettlement(ctx context.Context, settlementID int) ([]Survivor, error) {
+func (r PGRepo) GetAllSurvivorsForSettlement(ctx context.Context, settlementID int) ([]domain.Survivor, error) {
 	query := "SELECT * FROM campaign.survivor WHERE settlement = $1"
 	survivors, err := r.find(ctx, query, settlementID)
 	return survivors, err
 }
 
-func (r PGRepo) find(ctx context.Context, query string, args ...interface{}) ([]Survivor, error) {
+func (r PGRepo) find(ctx context.Context, query string, args ...interface{}) ([]domain.Survivor, error) {
 	log.Default().Println(query)
 	rows, queryErr := r.pool.Query(ctx, query, args...)
 	if queryErr != nil {
@@ -93,9 +71,9 @@ func (r PGRepo) find(ctx context.Context, query string, args ...interface{}) ([]
 		return nil, queryErr
 	}
 	defer rows.Close()
-	survivors := []Survivor{}
+	survivors := []domain.Survivor{}
 	for rows.Next() {
-		var s Survivor
+		var s domain.Survivor
 		err := rows.Scan(&s.ID,
 			&s.Settlement,
 			&s.Name,
