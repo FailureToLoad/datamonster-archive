@@ -3,9 +3,11 @@ package settlement
 import (
 	"github.com/failuretoload/datamonster/request"
 	"github.com/failuretoload/datamonster/response"
+	"github.com/failuretoload/datamonster/settlement/domain"
+	"github.com/failuretoload/datamonster/settlement/internal/repo"
+	"github.com/failuretoload/datamonster/settlement/internal/sql"
 	"net/http"
 
-	repo "github.com/failuretoload/datamonster/settlement/internal"
 	"github.com/failuretoload/datamonster/store"
 
 	"github.com/go-chi/chi/v5"
@@ -15,13 +17,13 @@ type Controller struct {
 	db *repo.Repo
 }
 
-func NewController(conn store.Connection) *Controller {
-	db := repo.New(conn)
+func NewController(dao store.DAO) *Controller {
+	db := repo.New(dao, sql.PostGres())
 	return &Controller{db: db}
 }
 
 type DTO struct {
-	ID                  int    `json:"id"`
+	ID                  int32  `json:"id"`
 	Name                string `json:"name"`
 	SurvivalLimit       int    `json:"limit"`
 	DepartingSurvival   int    `json:"departing"`
@@ -69,7 +71,7 @@ func (c Controller) createSettlement(w http.ResponseWriter, r *http.Request) {
 		response.BadRequest(ctx, w, "name is required", nil)
 		return
 	}
-	settlement := repo.Settlement{
+	settlement := domain.Settlement{
 		Owner:               userID,
 		Name:                body.Name,
 		SurvivalLimit:       1,
@@ -95,7 +97,10 @@ func (c Controller) getSettlement(w http.ResponseWriter, r *http.Request) {
 		response.BadRequest(ctx, w, "no user id provided", nil)
 		return
 	}
-	settlementID := chi.URLParam(r, "id")
+	settlementID, err := request.IDParam(r)
+	if err != nil {
+		response.BadRequest(ctx, w, "invalid settlement id", err)
+	}
 	settlement, repoErr := c.db.Get(r.Context(), settlementID, userID)
 	if repoErr != nil {
 		response.InternalServerError(r.Context(), w, "unable to retrieve settlement", repoErr)
@@ -105,8 +110,8 @@ func (c Controller) getSettlement(w http.ResponseWriter, r *http.Request) {
 	response.OK(r.Context(), w, dto)
 }
 
-func domainListToDto(settlements []repo.Settlement) []DTO {
-	dtos := []DTO{}
+func domainListToDto(settlements []domain.Settlement) []DTO {
+	var settlementDTOs []DTO
 	for _, s := range settlements {
 		dto := DTO{
 			ID:                  s.ID,
@@ -116,12 +121,12 @@ func domainListToDto(settlements []repo.Settlement) []DTO {
 			CollectiveCognition: s.CollectiveCognition,
 			Year:                s.CurrentYear,
 		}
-		dtos = append(dtos, dto)
+		settlementDTOs = append(settlementDTOs, dto)
 	}
-	return dtos
+	return settlementDTOs
 }
 
-func domainToDto(s repo.Settlement) DTO {
+func domainToDto(s domain.Settlement) DTO {
 	return DTO{
 		ID:                  s.ID,
 		Name:                s.Name,

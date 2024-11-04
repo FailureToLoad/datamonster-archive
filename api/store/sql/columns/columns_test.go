@@ -1,7 +1,7 @@
 package columns_test
 
 import (
-	"github.com/failuretoload/datamonster/pkg/querybuilder/columns"
+	columns2 "github.com/failuretoload/datamonster/store/sql/columns"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -9,16 +9,16 @@ import (
 func TestNumericColumn(t *testing.T) {
 	tests := []struct {
 		name      string
-		column    columns.Integer
-		operation func(columns.Integer) columns.Condition
+		column    columns2.Integer
+		operation func(columns2.Integer) columns2.Condition
 		want      string
 		args      []interface{}
 		paramEnd  int
 	}{
 		{
 			name:   "equals operation",
-			column: columns.NewIntegerColumn("age"),
-			operation: func(c columns.Integer) columns.Condition {
+			column: columns2.NewIntegerColumn("age"),
+			operation: func(c columns2.Integer) columns2.Condition {
 				return c.Equals(int32(25))
 			},
 			want:     "age = $1",
@@ -27,8 +27,8 @@ func TestNumericColumn(t *testing.T) {
 		},
 		{
 			name:   "greater than operation",
-			column: columns.NewIntegerColumn("count"),
-			operation: func(c columns.Integer) columns.Condition {
+			column: columns2.NewIntegerColumn("count"),
+			operation: func(c columns2.Integer) columns2.Condition {
 				return c.GreaterThan(int32(10))
 			},
 			want:     "count > $1",
@@ -37,8 +37,8 @@ func TestNumericColumn(t *testing.T) {
 		},
 		{
 			name:   "less than operation",
-			column: columns.NewIntegerColumn("quantity"),
-			operation: func(c columns.Integer) columns.Condition {
+			column: columns2.NewIntegerColumn("quantity"),
+			operation: func(c columns2.Integer) columns2.Condition {
 				return c.LessThan(int32(50))
 			},
 			want:     "quantity < $1",
@@ -47,8 +47,8 @@ func TestNumericColumn(t *testing.T) {
 		},
 		{
 			name:   "greater than or equal operation",
-			column: columns.NewIntegerColumn("price"),
-			operation: func(c columns.Integer) columns.Condition {
+			column: columns2.NewIntegerColumn("price"),
+			operation: func(c columns2.Integer) columns2.Condition {
 				return c.GreaterOrEqual(int32(100))
 			},
 			want:     "price >= $1",
@@ -57,8 +57,8 @@ func TestNumericColumn(t *testing.T) {
 		},
 		{
 			name:   "less than or equal operation",
-			column: columns.NewIntegerColumn("stock"),
-			operation: func(c columns.Integer) columns.Condition {
+			column: columns2.NewIntegerColumn("stock"),
+			operation: func(c columns2.Integer) columns2.Condition {
 				return c.LessOrEqual(int32(1000))
 			},
 			want:     "stock <= $1",
@@ -67,8 +67,8 @@ func TestNumericColumn(t *testing.T) {
 		},
 		{
 			name:   "in operation single value",
-			column: columns.NewIntegerColumn("id"),
-			operation: func(c columns.Integer) columns.Condition {
+			column: columns2.NewIntegerColumn("id"),
+			operation: func(c columns2.Integer) columns2.Condition {
 				return c.In(int32(1))
 			},
 			want:     "id = ANY($1)",
@@ -77,8 +77,8 @@ func TestNumericColumn(t *testing.T) {
 		},
 		{
 			name:   "in operation multiple values",
-			column: columns.NewIntegerColumn("id"),
-			operation: func(c columns.Integer) columns.Condition {
+			column: columns2.NewIntegerColumn("id"),
+			operation: func(c columns2.Integer) columns2.Condition {
 				return c.In(int32(1), int32(2), int32(3))
 			},
 			want:     "id = ANY($1)",
@@ -100,16 +100,16 @@ func TestNumericColumn(t *testing.T) {
 func TestLexicColumn(t *testing.T) {
 	tests := []struct {
 		name      string
-		column    columns.Text
-		operation func(columns.Text) columns.Condition
+		column    columns2.Text
+		operation func(columns2.Text) columns2.Condition
 		want      string
 		args      []interface{}
 		paramEnd  int
 	}{
 		{
 			name:   "equals operation",
-			column: columns.NewTextColumn("name"),
-			operation: func(c columns.Text) columns.Condition {
+			column: columns2.NewTextColumn("name"),
+			operation: func(c columns2.Text) columns2.Condition {
 				return c.Equals("John")
 			},
 			want:     "name = $1",
@@ -118,8 +118,8 @@ func TestLexicColumn(t *testing.T) {
 		},
 		{
 			name:   "case sensitive LIKE operation",
-			column: columns.NewTextColumn("email"),
-			operation: func(c columns.Text) columns.Condition {
+			column: columns2.NewTextColumn("email"),
+			operation: func(c columns2.Text) columns2.Condition {
 				return c.Like("%@example.com", false)
 			},
 			want:     "email LIKE $1",
@@ -128,8 +128,8 @@ func TestLexicColumn(t *testing.T) {
 		},
 		{
 			name:   "case insensitive ILIKE operation",
-			column: columns.NewTextColumn("title"),
-			operation: func(c columns.Text) columns.Condition {
+			column: columns2.NewTextColumn("title"),
+			operation: func(c columns2.Text) columns2.Condition {
 				return c.Like("%manager%", true)
 			},
 			want:     "title ILIKE $1",
@@ -138,8 +138,8 @@ func TestLexicColumn(t *testing.T) {
 		},
 		{
 			name:   "IN operation with single value",
-			column: columns.NewTextColumn("status"),
-			operation: func(c columns.Text) columns.Condition {
+			column: columns2.NewTextColumn("status"),
+			operation: func(c columns2.Text) columns2.Condition {
 				return c.In("active")
 			},
 			want:     "status = ANY($1)",
@@ -148,8 +148,8 @@ func TestLexicColumn(t *testing.T) {
 		},
 		{
 			name:   "IN operation with multiple values",
-			column: columns.NewTextColumn("category"),
-			operation: func(c columns.Text) columns.Condition {
+			column: columns2.NewTextColumn("category"),
+			operation: func(c columns2.Text) columns2.Condition {
 				return c.In("books", "movies", "games")
 			},
 			want:     "category = ANY($1)",
@@ -169,19 +169,19 @@ func TestLexicColumn(t *testing.T) {
 }
 
 func TestComposite(t *testing.T) {
-	age := columns.NewIntegerColumn("age")
-	name := columns.NewTextColumn("name")
+	age := columns2.NewIntegerColumn("age")
+	name := columns2.NewTextColumn("name")
 
 	tests := []struct {
 		name      string
-		condition columns.Condition
+		condition columns2.Condition
 		want      string
 		args      []interface{}
 		paramEnd  int
 	}{
 		{
 			name: "single AND condition",
-			condition: columns.And(
+			condition: columns2.And(
 				age.GreaterThan(int32(20)),
 			),
 			want:     "age > $1",
@@ -189,8 +189,8 @@ func TestComposite(t *testing.T) {
 			paramEnd: 2,
 		},
 		{
-			name: "multiple AND conditions",
-			condition: columns.And(
+			name: "multiple AND Conditions",
+			condition: columns2.And(
 				age.GreaterThan(int32(20)),
 				age.LessThan(int32(30)),
 			),
@@ -200,7 +200,7 @@ func TestComposite(t *testing.T) {
 		},
 		{
 			name: "single OR condition",
-			condition: columns.Or(
+			condition: columns2.Or(
 				name.Equals("John"),
 			),
 			want:     "name = $1",
@@ -208,8 +208,8 @@ func TestComposite(t *testing.T) {
 			paramEnd: 2,
 		},
 		{
-			name: "multiple OR conditions",
-			condition: columns.Or(
+			name: "multiple OR Conditions",
+			condition: columns2.Or(
 				name.Equals("John"),
 				name.Equals("Jane"),
 			),
@@ -218,10 +218,10 @@ func TestComposite(t *testing.T) {
 			paramEnd: 3,
 		},
 		{
-			name: "nested AND/OR conditions",
-			condition: columns.And(
+			name: "nested AND/OR Conditions",
+			condition: columns2.And(
 				age.GreaterThan(int32(20)),
-				columns.Or(
+				columns2.Or(
 					name.Equals("John"),
 					name.Equals("Jane"),
 				),
@@ -232,7 +232,7 @@ func TestComposite(t *testing.T) {
 		},
 		{
 			name:      "empty composite",
-			condition: columns.And(),
+			condition: columns2.And(),
 			want:      "",
 			args:      nil,
 			paramEnd:  1,

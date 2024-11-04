@@ -1,16 +1,10 @@
-package querybuilder
+package sql
 
 import (
 	"fmt"
+	"github.com/failuretoload/datamonster/store/sql/columns"
 	"strings"
-
-	"github.com/failuretoload/datamonster/pkg/querybuilder/columns"
 )
-
-type Table interface {
-	TableName() string
-	AllColumns() []string
-}
 
 type Query interface {
 	Build() (string, []interface{})
@@ -38,22 +32,12 @@ func (w WhereClause) Build() (string, []interface{}) {
 }
 
 type SelectQuery struct {
-	table      Table
-	selections []string
+	TableName  string
+	Selections []string
 	where      *WhereClause
 	orderBy    []string
 	limit      *int
 	offset     *int
-}
-
-func Select(table Table, cols ...string) *SelectQuery {
-	if len(cols) == 0 {
-		cols = table.AllColumns()
-	}
-	return &SelectQuery{
-		table:      table,
-		selections: cols,
-	}
 }
 
 func (q *SelectQuery) Where(w WhereClause) *SelectQuery {
@@ -81,9 +65,9 @@ func (q *SelectQuery) Build() (string, []interface{}) {
 	query := &strings.Builder{}
 
 	query.WriteString("SELECT ")
-	query.WriteString(strings.Join(q.selections, ", "))
+	query.WriteString(strings.Join(q.Selections, ", "))
 	query.WriteString(" FROM ")
-	query.WriteString(q.table.TableName())
+	query.WriteString(q.TableName)
 
 	if q.where != nil {
 		if whereClause, whereArgs := q.where.Build(); whereClause != "" {

@@ -1,4 +1,4 @@
-package querybuilder
+package sql
 
 import (
 	"fmt"
@@ -7,20 +7,16 @@ import (
 )
 
 type UpdateQuery struct {
-	table     Table
+	TableName string
 	sets      map[string]interface{}
 	where     *WhereClause
 	returning []string
 }
 
-func Update(table Table) *UpdateQuery {
-	return &UpdateQuery{
-		table: table,
-		sets:  make(map[string]interface{}),
-	}
-}
-
 func (q *UpdateQuery) Set(column string, value interface{}) *UpdateQuery {
+	if q.sets == nil {
+		q.sets = make(map[string]interface{})
+	}
 	q.sets[column] = value
 	return q
 }
@@ -44,7 +40,7 @@ func (q *UpdateQuery) Build() (string, []interface{}) {
 	query := &strings.Builder{}
 
 	query.WriteString("UPDATE ")
-	query.WriteString(q.table.TableName())
+	query.WriteString(q.TableName)
 	query.WriteString(" SET ")
 
 	setStrings := make([]string, 0, len(q.sets))

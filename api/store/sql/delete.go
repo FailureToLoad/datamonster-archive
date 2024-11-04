@@ -1,19 +1,13 @@
-package querybuilder
+package sql
 
 import (
 	"strings"
 )
 
 type DeleteCommand struct {
-	table     Table
+	TableName string
 	where     *WhereClause
 	returning []string
-}
-
-func Delete(table Table) *DeleteCommand {
-	return &DeleteCommand{
-		table: table,
-	}
 }
 
 func (q *DeleteCommand) Where(w WhereClause) *DeleteCommand {
@@ -29,23 +23,23 @@ func (q *DeleteCommand) Returning(cols ...string) *DeleteCommand {
 // Build constructs the final SQL query and parameters
 func (q *DeleteCommand) Build() (string, []interface{}) {
 	var params []interface{}
-	query := &strings.Builder{}
+	builder := &strings.Builder{}
 
-	query.WriteString("DELETE FROM ")
-	query.WriteString(q.table.TableName())
+	builder.WriteString("DELETE FROM ")
+	builder.WriteString(q.TableName)
 
 	if q.where != nil {
 		if whereClause, whereArgs := q.where.Build(); whereClause != "" {
-			query.WriteString(" ")
-			query.WriteString(whereClause)
+			builder.WriteString(" ")
+			builder.WriteString(whereClause)
 			params = append(params, whereArgs...)
 		}
 	}
 
 	if len(q.returning) > 0 {
-		query.WriteString(" RETURNING ")
-		query.WriteString(strings.Join(q.returning, ", "))
+		builder.WriteString(" RETURNING ")
+		builder.WriteString(strings.Join(q.returning, ", "))
 	}
 
-	return query.String(), params
+	return builder.String(), params
 }

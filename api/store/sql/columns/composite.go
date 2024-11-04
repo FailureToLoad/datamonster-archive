@@ -5,27 +5,27 @@ import (
 	"strings"
 )
 
-// Condition represents a single condition or a group of conditions
+// Condition represents a single condition or a group of Conditions
 type Condition interface {
 	Build(paramStart int) (string, []interface{}, int)
 }
 
-// Composite represents a group of conditions joined by an operator
+// Composite represents a group of Conditions joined by an Operator
 type Composite struct {
-	conditions []Condition
-	operator   string
+	Conditions []Condition
+	Operator   string
 }
 
 func (c Composite) Build(paramStart int) (string, []interface{}, int) {
-	if len(c.conditions) == 0 {
+	if len(c.Conditions) == 0 {
 		return "", nil, paramStart
 	}
 
-	clauses := make([]string, 0, len(c.conditions))
+	clauses := make([]string, 0, len(c.Conditions))
 	var allArgs []interface{}
 	currentParam := paramStart
 
-	for _, cond := range c.conditions {
+	for _, cond := range c.Conditions {
 		clause, args, nextParam := cond.Build(currentParam)
 		if clause != "" {
 			clauses = append(clauses, clause)
@@ -38,7 +38,7 @@ func (c Composite) Build(paramStart int) (string, []interface{}, int) {
 		return "", nil, paramStart
 	}
 
-	result := strings.Join(clauses, fmt.Sprintf(" %s ", c.operator))
+	result := strings.Join(clauses, fmt.Sprintf(" %s ", c.Operator))
 	if len(clauses) > 1 {
 		result = fmt.Sprintf("(%s)", result)
 	}
@@ -49,15 +49,15 @@ func (c Composite) Build(paramStart int) (string, []interface{}, int) {
 // And creates a composite AND condition
 func And(conditions ...Condition) Condition {
 	return Composite{
-		conditions: conditions,
-		operator:   "AND",
+		Conditions: conditions,
+		Operator:   "AND",
 	}
 }
 
 // Or creates a composite OR condition
 func Or(conditions ...Condition) Condition {
 	return Composite{
-		conditions: conditions,
-		operator:   "OR",
+		Conditions: conditions,
+		Operator:   "OR",
 	}
 }
