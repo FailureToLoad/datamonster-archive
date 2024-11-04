@@ -5,5 +5,5 @@ import (
 )
 
 func PostGres() sql.Table {
-	return sql.Table{Name: "campaign.settlement"}
+	return sql.Table{Name: "campaign.survivor"}
 }

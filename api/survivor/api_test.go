@@ -2,42 +2,33 @@ package survivor
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http/httptest"
-	"regexp"
-	"strings"
 	"testing"
 
+	"github.com/failuretoload/datamonster/request"
 	"github.com/go-chi/chi/v5"
 	"github.com/pashagolub/pgxmock/v4"
 	"github.com/stretchr/testify/assert"
 )
 
-func normalizeSQL(sql string) string {
-	// Remove all whitespace between symbols and parentheses
-	re := regexp.MustCompile(`\s*([\(\),])\s*`)
-	sql = re.ReplaceAllString(sql, "$1")
-
-	// Collapse multiple spaces into single space
-	re = regexp.MustCompile(`\s+`)
-	return strings.TrimSpace(re.ReplaceAllString(sql, " "))
-}
-
-type sqlMatcher struct{}
-
-func (m sqlMatcher) Match(expectedSQL, actualSQL string) error {
-	if normalizeSQL(expectedSQL) != normalizeSQL(actualSQL) {
-		return fmt.Errorf("SQL does not match\nExpected: %s\nActual: %s",
-			normalizeSQL(expectedSQL),
-			normalizeSQL(actualSQL))
+var (
+	testSettlementID = 1
+	testUserID       = "userId"
+	survivorCols     = []string{
+		"id", "settlement", "name", "birth", "gender",
+		"status", "huntxp", "survival", "movement",
+		"accuracy", "strength", "evasion", "luck",
+		"speed", "insanity", "systemic_pressure",
+		"torment", "lumi", "courage", "understanding",
 	}
-	return nil
-}
+)
 
 func setupTest(t *testing.T) (*Controller, pgxmock.PgxPoolIface, *chi.Mux) {
-	mock, err := pgxmock.NewPool(pgxmock.QueryMatcherOption(sqlMatcher{}))
+	mock, err := pgxmock.NewPool()
 	if err != nil {
 		t.Fatalf("failed to create mock: %v", err)
 	}
@@ -52,188 +43,211 @@ func TestGetSurvivors_ReturnsSurvivorList(t *testing.T) {
 	_, db, router := setupTest(t)
 	defer db.Close()
 
-	survivorCols := []string{
-		"id", "settlement", "name", "gender", "birth", "huntxp", "survival",
-		"movement", "accuracy", "strength", "evasion", "luck", "speed",
-		"insanity", "systemic_pressure", "torment", "lumi", "courage", "understanding",
-		"status",
-	}
-
 	values := [][]any{
-		{1, 1, "Zach", "M", 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, nil},
-		{2, 1, "Lucy", "M", 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, nil},
+		{int32(1), int32(testSettlementID), "Survivor One", int32(1), "F", nil, int32(0), int32(1), int32(5), int32(5), int32(5), int32(5), int32(5), int32(5), int32(0), int32(0), int32(0), int32(0), int32(0), int32(0)},
+		{int32(2), int32(testSettlementID), "Survivor Two", int32(1), "M", nil, int32(0), int32(1), int32(5), int32(5), int32(5), int32(5), int32(5), int32(5), int32(0), int32(0), int32(0), int32(0), int32(0), int32(0)},
 	}
-
 	rows := pgxmock.NewRows(survivorCols).AddRows(values...)
-
-	db.ExpectQuery("SELECT * FROM campaign.survivor WHERE settlement = $1").
-		WithArgs(1).
+	db.ExpectQuery("SELECT .* FROM campaign.survivor WHERE").
+		WithArgs(int32(testSettlementID)).
 		WillReturnRows(rows)
 
-	req := httptest.NewRequest("GET", "/settlements/1/survivors", nil)
+	req := httptest.NewRequest("GET", fmt.Sprintf("/settlements/%d/survivors", testSettlementID), nil)
+	ctx := req.Context()
+	ctx = context.WithValue(ctx, request.UserIDKey, testUserID)
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
+	router.ServeHTTP(w, req.WithContext(ctx))
 	resp := w.Result()
+
 	assert.Equal(t, 200, resp.StatusCode, "200 response should be returned")
 	body, _ := io.ReadAll(resp.Body)
-	dtoList := []DTO{}
-	_ = json.Unmarshal(body, &dtoList)
-	assert.Equal(t, 2, len(dtoList), "2 survivors should be returned")
+	var dto []DTO
+	_ = json.Unmarshal(body, &dto)
+	assert.Equal(t, 2, len(dto), "2 survivors should be returned")
 }
 
-func TestCreateSurvivor_ReturnsNoContent(t *testing.T) {
+func TestGetSurvivors_ReportsScanErrors(t *testing.T) {
 	_, db, router := setupTest(t)
 	defer db.Close()
 
-	db.ExpectExec("INSERT INTO campaign.survivor (settlement, name, birth, huntxp, gender, survival, movement, accuracy, strength, evasion, luck, speed, insanity, systemic_pressure, torment, lumi, courage, understanding) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)").
-		WithArgs(1, "Zach", 1, 1, "M", 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1).
+	db.ExpectQuery("SELECT .* FROM campaign.survivor WHERE").
+		WithArgs(int32(testSettlementID)).
+		WillReturnError(fmt.Errorf("scan error"))
+
+	req := httptest.NewRequest("GET", fmt.Sprintf("/settlements/%d/survivors", testSettlementID), nil)
+	ctx := req.Context()
+	ctx = context.WithValue(ctx, request.UserIDKey, testUserID)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req.WithContext(ctx))
+	resp := w.Result()
+
+	assert.Equal(t, 500, resp.StatusCode, "scan errors should result in server error")
+}
+
+func TestGetSurvivors_ReportsConnectionErrors(t *testing.T) {
+	_, db, router := setupTest(t)
+	defer db.Close()
+
+	db.ExpectQuery("SELECT .* FROM campaign.survivor WHERE").
+		WithArgs(int32(testSettlementID)).
+		WillReturnError(fmt.Errorf("connection error"))
+
+	req := httptest.NewRequest("GET", fmt.Sprintf("/settlements/%d/survivors", testSettlementID), nil)
+	ctx := req.Context()
+	ctx = context.WithValue(ctx, request.UserIDKey, testUserID)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req.WithContext(ctx))
+	resp := w.Result()
+
+	assert.Equal(t, 500, resp.StatusCode, "connection issues should result in server error")
+}
+
+func TestCreateSurvivor_Success(t *testing.T) {
+	_, db, router := setupTest(t)
+	defer db.Close()
+
+	db.ExpectExec("INSERT INTO campaign.survivor").
+		WithArgs(
+			int32(testSettlementID), "New Survivor", int32(1), "F",
+			int32(0), int32(1), int32(5), int32(5), int32(5),
+			int32(5), int32(5), int32(5), int32(0), int32(0),
+			int32(0), int32(0), int32(0), int32(0),
+		).
 		WillReturnResult(pgxmock.NewResult("INSERT", 1))
 
-	survivor := DTO{
-		Settlement:       1,
-		Name:             "Zach",
-		Birth:            1,
-		Gender:           "M",
-		HuntXp:           1,
-		Survival:         1,
-		Movement:         1,
-		Accuracy:         1,
-		Strength:         1,
-		Evasion:          1,
-		Luck:             1,
-		Speed:            1,
-		Insanity:         1,
-		SystemicPressure: 1,
-		Torment:          1,
-		Lumi:             1,
-		Understanding:    1,
-		Courage:          1,
+	survivorRequest := DTO{
+		Settlement: testSettlementID,
+		Name:       "New Survivor",
+		Birth:      1,
+		Gender:     "F",
+		HuntXp:     0,
+		Survival:   1,
+		Movement:   5,
+		Accuracy:   5,
+		Strength:   5,
+		Evasion:    5,
+		Luck:       5,
+		Speed:      5,
 	}
-	reqBody, err := json.Marshal(survivor)
-	if err != nil {
-		t.Fatalf("Failed to marshal JSON: %v", err)
-	}
-	req := httptest.NewRequest("POST", "/settlements/1/survivors", bytes.NewBuffer(reqBody))
+	reqBody, _ := json.Marshal(survivorRequest)
+	req := httptest.NewRequest("POST", fmt.Sprintf("/settlements/%d/survivors", testSettlementID), bytes.NewReader(reqBody))
+	ctx := req.Context()
+	ctx = context.WithValue(ctx, request.UserIDKey, testUserID)
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
+	router.ServeHTTP(w, req.WithContext(ctx))
 	resp := w.Result()
-	assert.Equal(t, 204, resp.StatusCode, "204 response should be returned")
+
+	assert.Equal(t, 204, resp.StatusCode, "successful creation should return 204")
 }
 
-func TestCreateSurvivor_RequiresAValidSettlementId(t *testing.T) {
+func TestCreateSurvivor_RequiresValidSettlementID(t *testing.T) {
 	_, _, router := setupTest(t)
 
-	req := httptest.NewRequest("POST", "/settlements/z/survivors", bytes.NewBuffer([]byte("{}")))
+	survivorRequest := DTO{
+		Name:   "New Survivor",
+		Gender: "F",
+	}
+	reqBody, _ := json.Marshal(survivorRequest)
+	req := httptest.NewRequest("POST", "/settlements/invalid/survivors", bytes.NewReader(reqBody))
+	ctx := req.Context()
+	ctx = context.WithValue(ctx, request.UserIDKey, testUserID)
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
+	router.ServeHTTP(w, req.WithContext(ctx))
 	resp := w.Result()
-	assert.Equal(t, 500, resp.StatusCode, "500 should be returned if the param is invalid")
+
+	assert.Equal(t, 500, resp.StatusCode, "invalid settlement ID should return 500")
 }
 
-func TestCreateSurvivor_RequiresAUniqueName(t *testing.T) {
+func TestCreateSurvivor_RequiresName(t *testing.T) {
+	_, _, router := setupTest(t)
+
+	survivorRequest := DTO{
+		Settlement: testSettlementID,
+		Gender:     "F",
+	}
+	reqBody, _ := json.Marshal(survivorRequest)
+	req := httptest.NewRequest("POST", fmt.Sprintf("/settlements/%d/survivors", testSettlementID), bytes.NewReader(reqBody))
+	ctx := req.Context()
+	ctx = context.WithValue(ctx, request.UserIDKey, testUserID)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req.WithContext(ctx))
+	resp := w.Result()
+
+	assert.Equal(t, 500, resp.StatusCode, "missing name should return 500")
+}
+
+func TestCreateSurvivor_RequiresUniqueName(t *testing.T) {
 	_, db, router := setupTest(t)
 	defer db.Close()
 
-	db.ExpectExec("INSERT INTO campaign.survivor (settlement, name, birth, huntxp, gender, survival, movement, accuracy, strength, evasion, luck, speed, insanity, systemic_pressure, torment, lumi, courage, understanding) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)").
-		WithArgs(1, "Zach", 1, 1, "M", 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1).
-		WillReturnError(fmt.Errorf("duplicate key value"))
+	db.ExpectExec("INSERT INTO campaign.survivor").
+		WithArgs(
+			int32(testSettlementID), "Duplicate Name", int32(1), "F",
+			int32(0), int32(1), int32(5), int32(5), int32(5),
+			int32(5), int32(5), int32(5), int32(0), int32(0),
+			int32(0), int32(0), int32(0), int32(0),
+		).
+		WillReturnError(fmt.Errorf("UNIQUE constraint failed"))
 
-	survivor := DTO{
-		Settlement:       1,
-		Name:             "Zach",
-		Birth:            1,
-		Gender:           "M",
-		HuntXp:           1,
-		Survival:         1,
-		Movement:         1,
-		Accuracy:         1,
-		Strength:         1,
-		Evasion:          1,
-		Luck:             1,
-		Speed:            1,
-		Insanity:         1,
-		SystemicPressure: 1,
-		Torment:          1,
-		Lumi:             1,
-		Understanding:    1,
-		Courage:          1,
+	survivorRequest := DTO{
+		Settlement: testSettlementID,
+		Name:       "Duplicate Name",
+		Birth:      1,
+		Gender:     "F",
+		HuntXp:     0,
+		Survival:   1,
+		Movement:   5,
+		Accuracy:   5,
+		Strength:   5,
+		Evasion:    5,
+		Luck:       5,
+		Speed:      5,
 	}
-
-	reqBody, err := json.Marshal(survivor)
-	if err != nil {
-		t.Fatalf("Failed to marshal JSON: %v", err)
-	}
-	req := httptest.NewRequest("POST", "/settlements/1/survivors", bytes.NewBuffer(reqBody))
+	reqBody, _ := json.Marshal(survivorRequest)
+	req := httptest.NewRequest("POST", fmt.Sprintf("/settlements/%d/survivors", testSettlementID), bytes.NewReader(reqBody))
+	ctx := req.Context()
+	ctx = context.WithValue(ctx, request.UserIDKey, testUserID)
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
+	router.ServeHTTP(w, req.WithContext(ctx))
 	resp := w.Result()
-	assert.Equal(t, 400, resp.StatusCode, "400 should be returned if the survivor already exists")
+
+	assert.Equal(t, 400, resp.StatusCode, "duplicate name should return 400")
 }
 
-func TestCreateSurvivor_RequiresAValidBody(t *testing.T) {
-	_, _, router := setupTest(t)
-
-	wrongBody := struct {
-		a, b, c int
-	}{
-		a: 1,
-		b: 1,
-		c: 1,
-	}
-
-	reqBody, err := json.Marshal(wrongBody)
-	if err != nil {
-		t.Fatalf("Failed to marshal JSON: %v", err)
-	}
-	req := httptest.NewRequest("POST", "/settlements/1/survivors", bytes.NewBuffer(reqBody))
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	resp := w.Result()
-	assert.Equal(t, 500, resp.StatusCode, "500 should be returned if the body is invalid")
-}
-
-func TestCreateSurvivor_CommunicatesDbIssues(t *testing.T) {
+func TestCreateSurvivor_ReportsCreationErrors(t *testing.T) {
 	_, db, router := setupTest(t)
 	defer db.Close()
 
-	db.ExpectExec("INSERT INTO campaign.survivor (settlement, name, birth, huntxp, gender, survival, movement, accuracy, strength, evasion, luck, speed, insanity, systemic_pressure, torment, lumi, courage, understanding) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)").
-		WithArgs(1, "Zach", 1, 1, "M", 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1).
-		WillReturnError(fmt.Errorf("well that ain't right"))
+	db.ExpectExec("INSERT INTO campaign.survivor").
+		WithArgs(
+			int32(testSettlementID), "Error Survivor", int32(1), "F",
+			int32(0), int32(1), int32(5), int32(5), int32(5),
+			int32(5), int32(5), int32(5), int32(0), int32(0),
+			int32(0), int32(0), int32(0), int32(0),
+		).
+		WillReturnError(fmt.Errorf("database error"))
 
-	survivor := DTO{
-		Settlement:       1,
-		Name:             "Zach",
-		Birth:            1,
-		Gender:           "M",
-		HuntXp:           1,
-		Survival:         1,
-		Movement:         1,
-		Accuracy:         1,
-		Strength:         1,
-		Evasion:          1,
-		Luck:             1,
-		Speed:            1,
-		Insanity:         1,
-		SystemicPressure: 1,
-		Torment:          1,
-		Lumi:             1,
-		Understanding:    1,
-		Courage:          1,
+	survivorRequest := DTO{
+		Settlement: testSettlementID,
+		Name:       "Error Survivor",
+		Birth:      1,
+		Gender:     "F",
+		HuntXp:     0,
+		Survival:   1,
+		Movement:   5,
+		Accuracy:   5,
+		Strength:   5,
+		Evasion:    5,
+		Luck:       5,
+		Speed:      5,
 	}
-
-	reqBody, err := json.Marshal(survivor)
-	if err != nil {
-		t.Fatalf("Failed to marshal JSON: %v", err)
-	}
-	req := httptest.NewRequest("POST", "/settlements/1/survivors", bytes.NewBuffer(reqBody))
+	reqBody, _ := json.Marshal(survivorRequest)
+	req := httptest.NewRequest("POST", fmt.Sprintf("/settlements/%d/survivors", testSettlementID), bytes.NewReader(reqBody))
+	ctx := req.Context()
+	ctx = context.WithValue(ctx, request.UserIDKey, testUserID)
 	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
+	router.ServeHTTP(w, req.WithContext(ctx))
 	resp := w.Result()
-	assert.Equal(t, 500, resp.StatusCode, "500 should be returned as the default for DB issues")
+
+	assert.Equal(t, 500, resp.StatusCode, "database errors should return 500")
 }

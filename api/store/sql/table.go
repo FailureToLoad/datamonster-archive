@@ -1,8 +1,7 @@
 package sql
 
 type Table struct {
-	Name        string
-	ColumnNames []string
+	Name string
 }
 
 func (t Table) Delete() *DeleteCommand {
@@ -19,7 +18,7 @@ func (t Table) Insert() *InsertCommand {
 
 func (t Table) Select(cols ...string) *SelectQuery {
 	if len(cols) == 0 {
-		cols = t.ColumnNames
+		cols = []string{"*"}
 	}
 	return &SelectQuery{
 		TableName:  t.Name,

@@ -11,17 +11,17 @@ import (
 
 	"github.com/failuretoload/datamonster/response"
 	"github.com/failuretoload/datamonster/store"
-	repo "github.com/failuretoload/datamonster/survivor/internal"
+	"github.com/failuretoload/datamonster/survivor/internal/repo"
 
 	"github.com/go-chi/chi/v5"
 )
 
 type Controller struct {
-	db *repo.PGRepo
+	db *repo.Repo
 }
 
 func NewController(conn store.Connection) *Controller {
-	r := repo.NewRepo(conn)
+	r := repo.New(conn)
 	return &Controller{db: r}
 }
 

@@ -5,10 +5,8 @@ import (
 	"github.com/failuretoload/datamonster/response"
 	"github.com/failuretoload/datamonster/settlement/domain"
 	"github.com/failuretoload/datamonster/settlement/internal/repo"
-	"github.com/failuretoload/datamonster/settlement/internal/sql"
-	"net/http"
-
 	"github.com/failuretoload/datamonster/store"
+	"net/http"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -17,13 +15,13 @@ type Controller struct {
 	db *repo.Repo
 }
 
-func NewController(dao store.DAO) *Controller {
-	db := repo.New(dao, sql.PostGres())
+func NewController(c store.Connection) *Controller {
+	db := repo.New(c)
 	return &Controller{db: db}
 }
 
 type DTO struct {
-	ID                  int32  `json:"id"`
+	ID                  int    `json:"id"`
 	Name                string `json:"name"`
 	SurvivalLimit       int    `json:"limit"`
 	DepartingSurvival   int    `json:"departing"`
@@ -101,7 +99,7 @@ func (c Controller) getSettlement(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		response.BadRequest(ctx, w, "invalid settlement id", err)
 	}
-	settlement, repoErr := c.db.Get(r.Context(), settlementID, userID)
+	settlement, repoErr := c.db.Get(ctx, settlementID, userID)
 	if repoErr != nil {
 		response.InternalServerError(r.Context(), w, "unable to retrieve settlement", repoErr)
 		return

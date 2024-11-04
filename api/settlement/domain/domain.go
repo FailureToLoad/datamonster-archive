@@ -1,7 +1,7 @@
 package domain
 
 type Settlement struct {
-	ID                  int32
+	ID                  int
 	Owner               string
 	Name                string
 	SurvivalLimit       int
