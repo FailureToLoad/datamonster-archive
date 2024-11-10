@@ -1,5 +1,4 @@
-import {Survivor} from '@types';
-import {DefaultSurvivor} from '@/lib/services/survivor';
+import {Survivor, DefaultSurvivor} from '@/lib/types/survivor';
 import {createContext} from 'react';
 
 export interface PopulationContextType {

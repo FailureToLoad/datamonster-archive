@@ -8,7 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@types': path.resolve(__dirname, './src/__generated__/graphql'),
+      '@types': path.resolve(__dirname, './src/lib/types'),
     },
   },
   server: {

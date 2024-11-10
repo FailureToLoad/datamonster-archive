@@ -14,7 +14,9 @@ import TimelineTab from '@/routes/settlement/timeline.tsx';
 import PopulationTab from '@/routes/settlement/population';
 import SettlementPage from '@/routes/settlement/index.tsx';
 import ErrorPage from './components/error';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 
+const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
     element: <RootLayout />,
@@ -46,6 +48,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
   </React.StrictMode>
 );

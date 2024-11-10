@@ -8,16 +8,12 @@
     "build": "tsc -b && vite build --mode prod",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "test": "vitest",
-    "compile": "graphql-codegen",
-    "watch": "graphql-codegen -w"
+    "test": "vitest"
   },
   "dependencies": {
-    "@apollo/client": "^3.11.4",
     "@clerk/clerk-react": "^5.2.10",
     "@hookform/error-message": "^2.0.1",
     "@hookform/resolvers": "^3.9.0",
-    "@parcel/watcher": "^2.4.1",
     "@phosphor-icons/react": "^2.1.7",
     "@radix-ui/react-checkbox": "^1.1.1",
     "@radix-ui/react-context-menu": "^2.2.1",
@@ -51,9 +47,6 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "^5.0.2",
-    "@graphql-codegen/client-preset": "^4.3.3",
-    "@graphql-typed-document-node/core": "^3.2.0",
     "@testing-library/jest-dom": "^6.4.8",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
@@ -64,7 +57,6 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
-    "graphql": "^16.9.0",
     "jsdom": "^24.1.1",
     "postcss": "^8.4.40",
     "tailwindcss": "^3.4.7",

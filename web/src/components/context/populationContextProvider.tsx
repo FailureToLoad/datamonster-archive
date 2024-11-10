@@ -1,5 +1,4 @@
-import {Survivor} from '@types';
-import {DefaultSurvivor} from '@/lib/services/survivor';
+import {Survivor, DefaultSurvivor} from '@/lib/types/survivor';
 import {ReactNode, useState} from 'react';
 import {PopulationContextType, PopulationContext} from './populationContext';
 

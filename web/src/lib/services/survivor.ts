@@ -1,114 +1,75 @@
-import {gql} from '@/__generated__';
-import {Survivor, SurvivorGender, SurvivorStatus} from '@types';
+import {Survivor} from '@/lib/types/survivor';
 
-export const CreateSurvivor = gql(/* GraphQL */ `
-  mutation CreateSurvivor($input: CreateSurvivorInput!) {
-    createSurvivor(input: $input) {
-      id
-      name
-    }
-  }
-`);
-
-export const UpdateSurvivor = gql(/* GraphQL */ `
-  mutation UpdateSurvivor($id: ID!, $input: UpdateSurvivorInput!) {
-    updateSurvivor(id: $id, input: $input) {
-      id
-      name
-    }
-  }
-`);
-
-export type CreateSurvivorRequest = {
-  settlementID: string;
-  name: string;
-  born?: number;
-  gender?: SurvivorGender;
-  huntxp?: number;
-  survival?: number;
-  movement?: number;
-  accuracy?: number;
-  strength?: number;
-  evasion?: number;
-  luck?: number;
-  speed?: number;
-  insanity?: number;
-  systemicpressure?: number;
-  torment?: number;
-  lumi?: number;
-  courage?: number;
-  understanding?: number;
-  status?: SurvivorStatus;
-  statusChangedYear?: number;
+const updateUrl = (settlementId: string, survivorId: number) => {
+  return `${
+    import.meta.env.VITE_API_HOST
+  }/settlements/${settlementId}/survivors/${survivorId}`;
 };
 
-export type UpdateSurvivorRequest = {
-  name?: string;
-  born?: number;
-  gender?: SurvivorGender;
-  huntxp?: number;
-  survival?: number;
-  movement?: number;
-  accuracy?: number;
-  strength?: number;
-  evasion?: number;
-  luck?: number;
-  speed?: number;
-  insanity?: number;
-  systemicpressure?: number;
-  torment?: number;
-  lumi?: number;
-  courage?: number;
-  understanding?: number;
-  status?: SurvivorStatus;
-  statusChangeYear?: number;
+const insertUrl = (settlementId: string) => {
+  return `${
+    import.meta.env.VITE_API_HOST
+  }/settlements/${settlementId}/survivors`;
 };
 
-export const DefaultSurvivor: Survivor = {
-  id: '',
-  settlementID: '',
-  name: 'Meat',
-  born: 0,
-  gender: SurvivorGender.M,
-  huntxp: 0,
-  survival: 1,
-  systemicpressure: 0,
-  movement: 5,
-  accuracy: 0,
-  strength: 0,
-  evasion: 0,
-  luck: 0,
-  speed: 0,
-  lumi: 0,
-  insanity: 0,
-  torment: 0,
-  courage: 0,
-  understanding: 0,
-  status: SurvivorStatus.Alive,
-  statusChangeYear: 0,
-};
+export async function CreateSurvivor(
+  survivor: Survivor,
+  settlementId: string,
+  accessToken: string
+) {
+  const response = await fetch(insertUrl(settlementId), {
+    method: 'post',
+    headers: new Headers({
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    }),
+    body: JSON.stringify(survivor),
+  });
 
-export const GET_SURVIVORS = gql(/* GraphQL */ `
-  query GetSurvivors($settlementId: ID!) {
-    survivors(filter: {settlementID: $settlementId}) {
-      id
-      accuracy
-      born
-      courage
-      evasion
-      gender
-      huntxp
-      insanity
-      luck
-      lumi
-      movement
-      name
-      speed
-      strength
-      survival
-      systemicpressure
-      torment
-      understanding
-    }
+  if (!response.ok) {
+    throw new Error('survivor creation failed');
   }
-`);
+}
+
+export async function UpdateSurvivor(
+  survivor: Survivor,
+  settlementId: string,
+  accessToken: string
+) {
+  const response = await fetch(updateUrl(settlementId, survivor.id), {
+    method: 'post',
+    headers: new Headers({
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    }),
+    body: JSON.stringify(survivor),
+  });
+
+  if (!response.ok) {
+    throw new Error('survivor creation failed');
+  }
+}
+
+export async function FetchSurvivors(
+  settlementId: string,
+  accessToken: string
+) {
+  const path = `${
+    import.meta.env.VITE_API_HOST
+  }/settlements/${settlementId}/survivors`;
+  console.log(`request path ${path}`);
+  const response = await fetch(path, {
+    method: 'get',
+    headers: new Headers({
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('unable to fetch survivors');
+  }
+
+  const responseJson: Array<Survivor> = await response.json();
+  return responseJson;
+}

@@ -22,19 +22,7 @@ import {zodResolver} from '@hookform/resolvers/zod';
 import {Settlement} from '@/lib/types/settlements';
 import {useState} from 'react';
 import {Plus} from 'lucide-react';
-import {useMutation} from '@apollo/client';
-import {gql} from '@/__generated__';
 import {useUser} from '@clerk/clerk-react';
-
-const CREATE_SETTLEMENT = gql(/* GraphQL */ `
-  mutation CreateSettlement($input: CreateSettlementInput!) {
-    createSettlement(input: $input) {
-      id
-      name
-      owner
-    }
-  }
-`);
 
 const schema = {
   settlementName: z
