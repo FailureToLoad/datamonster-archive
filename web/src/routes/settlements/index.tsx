@@ -1,31 +1,42 @@
 import {SettlementCard} from '@/routes/settlements/card';
-import {SettlementId} from '@/lib/types/settlements';
+import {Settlement} from '@/lib/types/settlements';
 import Spinner from '@/components/ui/spinner';
 import {CreateSettlementDialog} from './creationDialog';
-import {useQuery} from '@apollo/client';
-import {gql} from '@/__generated__';
+import {useAuth} from '@clerk/clerk-react';
+import {useQuery} from '@tanstack/react-query';
+import {GetSettlements} from '@/lib/services/settlement';
 
-const GET_SETTLEMENTS = gql(/* GraphQL */ `
-  query GetSettlements {
-    settlements {
-      id
-      name
-    }
-  }
-`);
-
+export const SettlementsQueryKey = 'settlements';
 export default function SettlementsPage() {
-  const {loading, error, refetch, data} = useQuery(GET_SETTLEMENTS);
+  const {getToken} = useAuth();
+  const getSettlements = async () => {
+    try {
+      const token = await getToken();
+      if (token === null || token === '') {
+        return null;
+      }
+      const settlements = await GetSettlements(token);
+      return settlements;
+    } catch (e) {
+      console.log(e);
+      return null;
+    }
+  };
 
-  if (loading) {
+  const {isPending, isError, data, error} = useQuery({
+    queryKey: [SettlementsQueryKey],
+    queryFn: getSettlements,
+  });
+
+  if (isPending) {
     return <Spinner />;
   }
 
-  if (error) {
+  if (isError) {
     throw new Error(error.message);
   }
 
-  const settlements = data?.settlements as Array<SettlementId>;
+  const settlements = data as Array<Settlement>;
   return (
     <main className="flex w-screen h-screen flex-col items-center justify-center overflow-hidden">
       <ul className="w-1/4 space-y-4 ">
@@ -36,7 +47,7 @@ export default function SettlementsPage() {
             </li>
           ))}
         <li key={-1}>
-          <CreateSettlementDialog refresh={refetch} />
+          <CreateSettlementDialog getToken={getToken} />
         </li>
       </ul>
     </main>

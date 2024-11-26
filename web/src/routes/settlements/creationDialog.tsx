@@ -22,7 +22,9 @@ import {zodResolver} from '@hookform/resolvers/zod';
 import {Settlement} from '@/lib/types/settlements';
 import {useState} from 'react';
 import {Plus} from 'lucide-react';
-import {useUser} from '@clerk/clerk-react';
+import {useQueryClient} from '@tanstack/react-query';
+import {CreateSettlement} from '@/lib/services/settlement';
+import {SettlementsQueryKey} from '.';
 
 const schema = {
   settlementName: z
@@ -34,36 +36,32 @@ export const AddSettlementSchema = z.object(schema);
 
 export type AddSettlementFields = z.infer<typeof AddSettlementSchema>;
 
+export type AddSettlementProps = {
+  getToken: () => Promise<string | null>;
+};
+
 export interface CreateSettlementProps {
   update: (s: Settlement) => void;
 }
-export function CreateSettlementDialog({refresh}: {refresh: () => void}) {
+export function CreateSettlementDialog({getToken}: AddSettlementProps) {
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const {user} = useUser();
   const form = useForm<AddSettlementFields>({
     resolver: zodResolver(AddSettlementSchema),
     defaultValues: {
       settlementName: '',
     },
   });
-  const [createSettlement, {loading}] = useMutation(CREATE_SETTLEMENT);
   const submitForm = async (data: AddSettlementFields) => {
+    const token = await getToken();
+    if (token === null || token === '') {
+      throw Error('invalid token');
+    }
     const {settlementName} = AddSettlementSchema.parse({
       settlementName: data.settlementName,
     });
-
-    if (!user) {
-      throw new Error('user is required for settlement creation');
-    }
-    createSettlement({
-      variables: {
-        input: {
-          name: settlementName,
-          owner: user.id,
-        },
-      },
-    });
-    refresh();
+    await CreateSettlement(settlementName, token);
+    queryClient.invalidateQueries({queryKey: [SettlementsQueryKey]});
     setOpen(false);
   };
 
@@ -106,9 +104,7 @@ export function CreateSettlementDialog({refresh}: {refresh: () => void}) {
               )}
             />
             <DialogFooter>
-              <Button disabled={loading} type="submit">
-                Add
-              </Button>
+              <Button type="submit">Add</Button>
             </DialogFooter>
           </form>
         </Form>
