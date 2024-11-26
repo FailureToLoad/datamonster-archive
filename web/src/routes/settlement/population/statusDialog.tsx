@@ -1,4 +1,3 @@
-import {SurvivorStatus} from '@/__generated__/graphql';
 import {PopulationContext} from '@/components/context/populationContext';
 import {Button} from '@/components/ui/button';
 import {
@@ -25,12 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  GET_SURVIVORS,
-  UpdateSurvivor,
-  UpdateSurvivorRequest,
-} from '@/lib/services/survivor';
-import {useMutation} from '@apollo/client';
+import {SurvivorStatus} from '@/lib/types/survivor';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useContext} from 'react';
 import {useForm} from 'react-hook-form';
@@ -48,25 +42,14 @@ interface StatusDialogProps {
 
 export default function StatusDialog({open, setOpen}: StatusDialogProps) {
   const {currentSurvivor} = useContext(PopulationContext);
-  const [updateSurvivor] = useMutation(UpdateSurvivor);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    const updateReq: UpdateSurvivorRequest = {
-      status: data.status,
-      statusChangeYear: data.year,
-    };
-
-    updateSurvivor({
-      variables: {
-        id: currentSurvivor.id,
-        input: {
-          ...updateReq,
-        },
-      },
-      refetchQueries: [GET_SURVIVORS],
-    });
+    // create request
+    // call update
+    // refetch survivors / invalidate cache
+    console.log(data);
     setOpen(false);
   }
   return (

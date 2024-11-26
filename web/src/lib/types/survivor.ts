@@ -43,3 +43,11 @@ export const DefaultSurvivor: Survivor = {
   understanding: 0,
   status: 'alive',
 };
+
+export enum SurvivorStatus {
+  Alive = 'ALIVE',
+  CeasedToExist = 'CEASED_TO_EXIST',
+  Dead = 'DEAD',
+  Retired = 'RETIRED',
+  SkipHunt = 'SKIP_HUNT',
+}

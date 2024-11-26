@@ -1,4 +1,3 @@
-import {gql} from '@/__generated__/';
 import {PopulationContext} from '@/components/context/populationContext';
 import {Button} from '@/components/ui/button';
 import {
@@ -8,15 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {DefaultSurvivor, GET_SURVIVORS} from '@/lib/services/survivor';
-import {useMutation} from '@apollo/client';
+import {DefaultSurvivor} from '@/lib/types/survivor';
 import {useContext} from 'react';
-
-const DELETE_SURVIVOR = gql(`
-  mutation DeleteSurvivor($id: ID!) {
-    deleteSurvivor(id: $id)
-  }
-`);
 
 interface DeleteDialogProps {
   open: boolean;
@@ -24,18 +16,9 @@ interface DeleteDialogProps {
 }
 
 export default function DeleteDialog({open, setOpen}: DeleteDialogProps) {
-  const {currentSurvivor, setCurrentSurvivor} =
-    useContext(PopulationContext);
-  const [deleteSurvivor, {error}] = useMutation(DELETE_SURVIVOR, {
-    refetchQueries: [GET_SURVIVORS],
-    awaitRefetchQueries: true,
-    variables: {id: currentSurvivor.id},
-  });
+  const {currentSurvivor, setCurrentSurvivor} = useContext(PopulationContext);
   async function handleDelete() {
-    await deleteSurvivor();
-    if (error) {
-      console.log(error);
-    }
+    //TODO implement the REST route for delete
     setCurrentSurvivor(DefaultSurvivor);
     setOpen(false);
   }

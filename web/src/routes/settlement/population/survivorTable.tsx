@@ -18,7 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {useContext, useState} from 'react';
-import {Survivor} from '@types';
+import {Survivor} from '@/lib/types/survivor';
 import {PopulationContext} from '@/components/context/populationContext';
 import {
   ContextMenu,

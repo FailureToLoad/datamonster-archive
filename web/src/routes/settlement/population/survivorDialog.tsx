@@ -15,7 +15,7 @@ import {Separator} from '@/components/ui/separator';
 import {Input} from '@/components/ui/input';
 import {cn} from '@/lib/utils';
 import {z} from 'zod';
-import {DefaultSurvivor, GET_SURVIVORS} from '@/lib/services/survivor';
+import {DefaultSurvivor, Survivor} from '@/lib/types/survivor';
 import {Control, FieldPath, useForm} from 'react-hook-form';
 
 import {zodResolver} from '@hookform/resolvers/zod';
@@ -31,13 +31,7 @@ import {useContext, useEffect, useState} from 'react';
 import {PopulationContext} from '@/components/context/populationContext';
 import {Toggle} from '@/components/ui/toggle';
 import {PencilSimple, Plus} from '@phosphor-icons/react';
-import {useMutation} from '@apollo/client';
-import {
-  CreateSurvivor,
-  CreateSurvivorRequest,
-  UpdateSurvivor,
-} from '@/lib/services/survivor';
-import {SurvivorGender} from '@/__generated__/graphql';
+import {CreateSurvivor, UpdateSurvivor} from '@/lib/services/survivor';
 
 const formSchema = z.object({
   name: z
@@ -62,9 +56,15 @@ type SurvivorFormFields = z.infer<typeof formSchema>;
 
 type SurvivorDialogProps = {
   settlementId: string;
+  getToken: () => Promise<string | null>;
+  afterSubmit: () => void;
 };
 
-export default function NewSurvivorDialog({settlementId}: SurvivorDialogProps) {
+export default function NewSurvivorDialog({
+  settlementId,
+  getToken,
+  afterSubmit,
+}: SurvivorDialogProps) {
   const [loading, setLoading] = useState(false);
   const {
     currentSurvivor,
@@ -82,7 +82,7 @@ export default function NewSurvivorDialog({settlementId}: SurvivorDialogProps) {
       name: currentSurvivor.name,
       gender: currentSurvivor.gender,
       survival: currentSurvivor.survival,
-      systemicPressure: currentSurvivor.systemicpressure,
+      systemicPressure: currentSurvivor.systemicPressure,
       movement: currentSurvivor.movement,
       accuracy: currentSurvivor.accuracy,
       strength: currentSurvivor.strength,
@@ -94,22 +94,29 @@ export default function NewSurvivorDialog({settlementId}: SurvivorDialogProps) {
       torment: currentSurvivor.torment,
     },
   });
-  const [createSurvivor] = useMutation(CreateSurvivor);
-  const [updateSurvivor] = useMutation(UpdateSurvivor);
   async function onSubmit(values: SurvivorFormFields) {
     try {
       setLoading(true);
+
+      const token = await getToken();
+      if (!token || token === '') {
+        throw Error('invalid token');
+      }
+
       if (!settlementId || settlementId === '') {
         throw Error('settlementId is required');
       }
 
       formSchema.parse(values);
 
-      const survivor: CreateSurvivorRequest = {
+      const survivor: Survivor = {
         name: values.name,
         born: 1,
-        gender: values.gender as SurvivorGender,
-        huntxp: 0,
+        gender: values.gender,
+        status: 'alive',
+        id: currentSurvivor.id,
+        settlementID: Number(settlementId),
+        huntXp: 0,
         survival: values.survival,
         movement: values.movement,
         accuracy: values.accuracy,
@@ -118,36 +125,21 @@ export default function NewSurvivorDialog({settlementId}: SurvivorDialogProps) {
         luck: values.luck,
         speed: values.speed,
         insanity: values.insanity,
-        systemicpressure: values.systemicPressure,
+        systemicPressure: values.systemicPressure,
         torment: values.torment,
         lumi: values.lumi,
         courage: 0,
         understanding: 0,
-        settlementID: settlementId,
       };
 
-      if (currentSurvivor.id.length > 0) {
-        updateSurvivor({
-          variables: {
-            id: currentSurvivor.id,
-            input: {
-              ...survivor,
-            },
-          },
-          refetchQueries: [GET_SURVIVORS],
-        });
+      if (survivor.id > 0) {
+        await UpdateSurvivor(survivor, settlementId, token);
       } else {
-        createSurvivor({
-          variables: {
-            input: {
-              ...survivor,
-            },
-          },
-          refetchQueries: [GET_SURVIVORS],
-        });
+        await CreateSurvivor(survivor, settlementId, token);
       }
 
-      form.reset({});
+      afterSubmit();
+      form.reset({}, {keepDefaultValues: true});
       setLoading(false);
       setDialogOpen(false);
     } catch (error) {
@@ -161,7 +153,7 @@ export default function NewSurvivorDialog({settlementId}: SurvivorDialogProps) {
     form.setValue('name', currentSurvivor.name || 'Meat');
     form.setValue('gender', currentSurvivor.gender || 'M');
     form.setValue('survival', currentSurvivor.survival || 0);
-    form.setValue('systemicPressure', currentSurvivor.systemicpressure || 0);
+    form.setValue('systemicPressure', currentSurvivor.systemicPressure || 0);
     form.setValue('movement', currentSurvivor.movement || 0);
     form.setValue('accuracy', currentSurvivor.accuracy || 0);
     form.setValue('strength', currentSurvivor.strength || 0);
