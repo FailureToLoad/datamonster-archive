@@ -1,24 +1,26 @@
+// src/routes/settlements/index.tsx
 import {SettlementCard} from '@/routes/settlements/card';
 import {Settlement} from '@/lib/types/settlements';
 import Spinner from '@/components/ui/spinner';
 import {CreateSettlementDialog} from './creationDialog';
-import {useAuth} from '@clerk/clerk-react';
+import {useAuth} from '@/auth/hooks';
 import {useQuery} from '@tanstack/react-query';
 import {GetSettlements} from '@/lib/services/settlement';
 
 export const SettlementsQueryKey = 'settlements';
 export default function SettlementsPage() {
   const {getToken} = useAuth();
+
   const getSettlements = async () => {
     try {
       const token = await getToken();
-      if (token === null || token === '') {
+      if (!token) {
         return null;
       }
       const settlements = await GetSettlements(token);
       return settlements;
     } catch (e) {
-      console.log(e);
+      console.error('Failed to fetch settlements:', e);
       return null;
     }
   };
@@ -47,7 +49,7 @@ export default function SettlementsPage() {
             </li>
           ))}
         <li key={-1}>
-          <CreateSettlementDialog getToken={getToken} />
+          <CreateSettlementDialog />
         </li>
       </ul>
     </main>

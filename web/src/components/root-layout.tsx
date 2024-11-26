@@ -1,25 +1,19 @@
+// src/components/root-layout.tsx
 import {Outlet} from 'react-router-dom';
-import {ClerkLoaded, ClerkLoading} from '@clerk/clerk-react';
 import Spinner from '@/components/ui/spinner';
-import AuthProvider from './auth-provider';
+import {useAuth} from '@/auth/hooks';
 
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-
-if (!PUBLISHABLE_KEY) {
-  throw new Error('Missing Publishable Key');
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+if (!GOOGLE_CLIENT_ID) {
+  throw new Error('Missing Google Client ID');
 }
 
 export default function RootLayout() {
+  const {isLoading} = useAuth();
+
   return (
-    <AuthProvider>
-        <div className="default flex h-screen flex-col items-center justify-center bg-background">
-          <ClerkLoading>
-            <Spinner />
-          </ClerkLoading>
-          <ClerkLoaded>
-            <Outlet />
-          </ClerkLoaded>
-        </div>
-    </AuthProvider>
+    <div className="default flex h-screen flex-col items-center justify-center bg-background">
+      {isLoading ? <Spinner /> : <Outlet />}
+    </div>
   );
 }

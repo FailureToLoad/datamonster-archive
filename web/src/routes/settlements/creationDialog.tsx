@@ -1,3 +1,4 @@
+// src/routes/settlements/creationDialog.tsx
 import {Button} from '@/components/ui/button';
 import {
   Dialog,
@@ -19,12 +20,12 @@ import {
 import * as z from 'zod';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {Settlement} from '@/lib/types/settlements';
 import {useState} from 'react';
 import {Plus} from 'lucide-react';
 import {useQueryClient} from '@tanstack/react-query';
 import {CreateSettlement} from '@/lib/services/settlement';
 import {SettlementsQueryKey} from '.';
+import {useAuth} from '@/auth/hooks';
 
 const schema = {
   settlementName: z
@@ -36,14 +37,8 @@ export const AddSettlementSchema = z.object(schema);
 
 export type AddSettlementFields = z.infer<typeof AddSettlementSchema>;
 
-export type AddSettlementProps = {
-  getToken: () => Promise<string | null>;
-};
-
-export interface CreateSettlementProps {
-  update: (s: Settlement) => void;
-}
-export function CreateSettlementDialog({getToken}: AddSettlementProps) {
+export function CreateSettlementDialog() {
+  const {getToken} = useAuth();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const form = useForm<AddSettlementFields>({
@@ -52,17 +47,26 @@ export function CreateSettlementDialog({getToken}: AddSettlementProps) {
       settlementName: '',
     },
   });
+
   const submitForm = async (data: AddSettlementFields) => {
-    const token = await getToken();
-    if (token === null || token === '') {
-      throw Error('invalid token');
+    try {
+      const token = await getToken();
+      if (!token) {
+        throw new Error('Not authenticated');
+      }
+
+      const {settlementName} = AddSettlementSchema.parse({
+        settlementName: data.settlementName,
+      });
+
+      await CreateSettlement(settlementName, token);
+      queryClient.invalidateQueries({queryKey: [SettlementsQueryKey]});
+      setOpen(false);
+      form.reset();
+    } catch (error) {
+      console.error('Failed to create settlement:', error);
+      // You might want to add error handling UI here
     }
-    const {settlementName} = AddSettlementSchema.parse({
-      settlementName: data.settlementName,
-    });
-    await CreateSettlement(settlementName, token);
-    queryClient.invalidateQueries({queryKey: [SettlementsQueryKey]});
-    setOpen(false);
   };
 
   return (

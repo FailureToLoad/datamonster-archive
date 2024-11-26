@@ -2,10 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
-	clerkhttp "github.com/clerk/clerk-sdk-go/v2/http"
-	"github.com/failuretoload/datamonster/request"
-	"github.com/failuretoload/datamonster/response"
+	"github.com/failuretoload/datamonster/auth"
 	"github.com/failuretoload/datamonster/settlement"
 	postgres "github.com/failuretoload/datamonster/store/postgres"
 	"github.com/failuretoload/datamonster/survivor"
@@ -14,13 +11,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/unrolled/secure"
-
-	"github.com/failuretoload/datamonster/config"
 )
 
 var (
@@ -30,6 +24,7 @@ var (
 	appContext           context.Context
 	settlementController *settlement.Controller
 	survivorController   *survivor.Controller
+	authController       *auth.Controller
 )
 
 func main() {
@@ -40,8 +35,9 @@ func main() {
 
 	settlementController = settlement.NewController(connPool)
 	survivorController = survivor.NewController(connPool)
+	authController = auth.NewController()
 
-	app = NewServer(settlementController, survivorController)
+	app = NewServer(settlementController, survivorController, authController)
 	app.Run()
 }
 
@@ -49,7 +45,9 @@ type Server struct {
 	Mux *chi.Mux
 }
 
-func NewServer(settlements *settlement.Controller, survivors *survivor.Controller) Server {
+func NewServer(settlements *settlement.Controller,
+	survivors *survivor.Controller,
+	googleAuth *auth.Controller) Server {
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
@@ -81,10 +79,20 @@ func NewServer(settlements *settlement.Controller, survivors *survivor.Controlle
 		_, _ = w.Write([]byte("ready"))
 	})
 
+	router.Mount("/auth", authRoutes(googleAuth))
 	router.Mount("/api", protectedRoutes(settlements, survivors))
 	return Server{
 		Mux: router,
 	}
+
+}
+
+func authRoutes(googleAuth *auth.Controller) http.Handler {
+	r := chi.NewRouter()
+	r.Use(CorsHandler())
+	r.Post("/callback", googleAuth.HandleGoogleAuth)
+	r.Get("/validate", googleAuth.ValidateToken)
+	return r
 }
 
 func protectedRoutes(settlement *settlement.Controller, survivor *survivor.Controller) http.Handler {
@@ -98,8 +106,7 @@ func protectedRoutes(settlement *settlement.Controller, survivor *survivor.Contr
 	r.Use(CorsHandler())
 	r.Use(SecureOptions())
 	r.Use(CacheControl)
-	r.Use(clerkhttp.WithHeaderAuthorization())
-	r.Use(UserIDExtractor)
+	r.Use(auth.GoogleAuthHandler)
 	settlement.RegisterRoutes(r)
 	survivor.RegisterRoutes(r)
 	return r
@@ -110,7 +117,6 @@ func (s Server) Handle(route string, handler http.Handler) {
 }
 
 func (s Server) Run() {
-	clerk.SetKey(config.Key())
 	ready = true
 	log.Default().Println("Starting server on 0.0.0.0:8080")
 	err := http.ListenAndServe("0.0.0.0:8080", s.Mux)
@@ -153,22 +159,4 @@ func CorsHandler() func(http.Handler) http.Handler {
 		MaxAge:           3599, // Maximum value not ignored by any of major browsers
 	})
 	return c.Handler
-}
-
-func UserIDExtractor(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		ctx := req.Context()
-		claims, ok := clerk.SessionClaimsFromContext(req.Context())
-		if !ok {
-			response.Unauthorized(ctx, rw, fmt.Errorf("missing claims"))
-			return
-		}
-		userID := claims.RegisteredClaims.Subject
-		if userID == "" {
-			response.Unauthorized(ctx, rw, fmt.Errorf("user id not found"))
-			return
-		}
-		ctx = context.WithValue(req.Context(), request.UserIDKey, userID)
-		next.ServeHTTP(rw, req.WithContext(ctx))
-	})
 }

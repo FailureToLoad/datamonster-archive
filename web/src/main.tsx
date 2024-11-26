@@ -1,8 +1,10 @@
+// src/main.tsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import {createBrowserRouter, RouterProvider} from 'react-router-dom';
 import RootLayout from '@/components/root-layout';
+import {GoogleAuthProvider} from '@/auth/googleAuthContext';
 
 import IndexPage from '@/routes';
 import SignInPage from '@/routes/signin';
@@ -48,8 +50,10 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
+    <GoogleAuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </GoogleAuthProvider>
   </React.StrictMode>
 );
