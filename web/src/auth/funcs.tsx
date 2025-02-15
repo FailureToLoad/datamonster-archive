@@ -1,13 +1,14 @@
-// src/lib/auth/utils.ts
 import {AuthUser, CredentialResponse} from './types';
 
 export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+// In-memory token storage
+let authToken: string | null = null;
 
 export async function handleGoogleResponse(
   response: CredentialResponse
 ): Promise<AuthUser | null> {
   const {credential} = response;
-
   try {
     const result = await fetch('/api/auth/google', {
       method: 'POST',
@@ -15,6 +16,7 @@ export async function handleGoogleResponse(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({credential}),
+      credentials: 'include',
     });
 
     if (!result.ok) {
@@ -22,9 +24,7 @@ export async function handleGoogleResponse(
     }
 
     const data = await result.json();
-
-    // Store the token
-    localStorage.setItem('auth_token', data.token);
+    authToken = data.token;
 
     return {
       id: data.userId,
@@ -38,18 +38,21 @@ export async function handleGoogleResponse(
   }
 }
 
-export async function validateAuthToken(
-  token: string
-): Promise<AuthUser | null> {
+export async function validateAuthToken(): Promise<AuthUser | null> {
   try {
+    if (!authToken) {
+      return null;
+    }
+
     const result = await fetch('/api/auth/validate', {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${authToken}`,
       },
+      credentials: 'include',
     });
 
     if (!result.ok) {
-      localStorage.removeItem('auth_token');
+      authToken = null;
       return null;
     }
 
@@ -62,7 +65,15 @@ export async function validateAuthToken(
     };
   } catch (error) {
     console.error('Token validation error:', error);
-    localStorage.removeItem('auth_token');
+    authToken = null;
     return null;
   }
+}
+
+export function getAuthToken(): string | null {
+  return authToken;
+}
+
+export function clearAuth(): void {
+  authToken = null;
 }
