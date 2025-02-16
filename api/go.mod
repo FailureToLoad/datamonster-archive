@@ -1,6 +1,6 @@
 module github.com/failuretoload/datamonster
 
-go 1.22.6
+go 1.24
 
 require (
 	entgo.io/contrib v0.6.1-0.20240802091602-de4ec7ae3f97
