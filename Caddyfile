@@ -12,20 +12,26 @@
         method OPTIONS
     }
    
-    handle /graphql* {
+    handle /api* {
         reverse_proxy http://localhost:8080 {
             header_up Host {http.reverse_proxy.upstream.hostport}
         }
     }
+    
 
-   
+    handle /auth* {
+        reverse_proxy http://localhost:8080 {
+            header_up Host {http.reverse_proxy.upstream.hostport}
+        }
+    }
+    
+
     handle {
         reverse_proxy http://localhost:8090 {
             header_up Host {http.reverse_proxy.upstream.hostport}
         }
     }
-
-
+    
     log {
         output stdout
         format console

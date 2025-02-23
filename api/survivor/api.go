@@ -1,13 +1,13 @@
 package survivor
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/failuretoload/datamonster/survivor/domain"
 	"net/http"
 	"strconv"
+
+	"github.com/failuretoload/datamonster/survivor/domain"
 
 	"github.com/failuretoload/datamonster/response"
 	"github.com/failuretoload/datamonster/store"
@@ -26,7 +26,6 @@ func NewController(conn store.Connection) *Controller {
 }
 
 func (c Controller) RegisterRoutes(r chi.Router) {
-	r.Use(settlementIDExtractor)
 	r.Get("/settlements/{id}/survivors", c.getSurvivors)
 	r.Post("/settlements/{id}/survivors", c.createSurvivor)
 }
@@ -111,25 +110,4 @@ func dtoListFromDomain(s []domain.Survivor) []DTO {
 		survivors[i] = dtoFromDomain(v)
 	}
 	return survivors
-}
-
-type ctxSettlementIDKey string
-
-const SettlementIDKey ctxSettlementIDKey = "settlementId"
-
-func settlementIDExtractor(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		settlementIDString := chi.URLParam(r, "id")
-		if settlementIDString != "" {
-			settlementID, convErr := strconv.Atoi(settlementIDString)
-			if convErr != nil {
-				response.BadRequest(r.Context(), w, "settlement id should be a number", convErr)
-				return
-			}
-			ctx := context.WithValue(r.Context(), SettlementIDKey, settlementID)
-			next.ServeHTTP(w, r.WithContext(ctx))
-		} else {
-			next.ServeHTTP(w, r)
-		}
-	})
 }

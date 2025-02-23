@@ -10,7 +10,7 @@ export async function handleGoogleResponse(
 ): Promise<AuthUser | null> {
   const {credential} = response;
   try {
-    const result = await fetch('/api/auth/google', {
+    const result = await fetch('/auth/callback', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ export async function validateAuthToken(): Promise<AuthUser | null> {
       return null;
     }
 
-    const result = await fetch('/api/auth/validate', {
+    const result = await fetch('/auth/validate', {
       headers: {
         Authorization: `Bearer ${authToken}`,
       },

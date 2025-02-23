@@ -37,7 +37,7 @@ export function GoogleAuthProvider({children}: {children: React.ReactNode}) {
 
   const handleCredentialResponse = async (response: {credential: string}) => {
     try {
-      const result = await fetch('/api/auth/google', {
+      const result = await fetch('/auth/callback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -67,7 +67,7 @@ export function GoogleAuthProvider({children}: {children: React.ReactNode}) {
 
   const validateToken = async (token: string) => {
     try {
-      const result = await fetch('/api/auth/validate', {
+      const result = await fetch('/auth/validate', {
         headers: {
           Authorization: `Bearer ${token}`,
         },

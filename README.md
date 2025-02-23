@@ -10,9 +10,6 @@ The caddy file mimics how the project behaves in production.
 ### Environment Variables
 
 ```bash
-export VITE_CLERK_PUBLISHABLE_KEY='your clerk publishable key'
-export KEY="your clerk secret key"
-export MODE="dev"
 export CONN="host=localhost port=5432 user=app dbname=records password=Password1 sslmode=disable"
 ```
 
