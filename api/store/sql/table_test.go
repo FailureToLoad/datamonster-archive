@@ -5,14 +5,12 @@ import (
 
 	"github.com/failuretoload/datamonster/store/sql"
 	"github.com/failuretoload/datamonster/store/sql/columns"
-	"github.com/failuretoload/datamonster/store/sql/operators"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTable_Select(t *testing.T) {
 	table := sql.Table{
-		Name:        "users",
-		ColumnNames: []string{"id", "name", "age"},
+		Name: "users",
 	}
 
 	tests := []struct {
@@ -26,7 +24,7 @@ func TestTable_Select(t *testing.T) {
 			setupQuery: func() *sql.SelectQuery {
 				return table.Select()
 			},
-			expectedSQL:    "SELECT id, name, age FROM users",
+			expectedSQL:    "SELECT * FROM users",
 			expectedParams: nil,
 		},
 		{
@@ -41,7 +39,7 @@ func TestTable_Select(t *testing.T) {
 			name: "select with where clause",
 			setupQuery: func() *sql.SelectQuery {
 				idCol := columns.NewIntegerColumn("id")
-				return table.Select().Where(sql.Where(idCol.Equals(1)))
+				return table.Select("id", "name", "age").Where(sql.Where(idCol.Equals(1)))
 			},
 			expectedSQL:    "SELECT id, name, age FROM users WHERE id = $1",
 			expectedParams: []interface{}{int32(1)},
@@ -51,11 +49,11 @@ func TestTable_Select(t *testing.T) {
 			setupQuery: func() *sql.SelectQuery {
 				ageCol := columns.NewIntegerColumn("age")
 				nameCol := columns.NewTextColumn("name")
-				where := sql.Where(operators.And(
+				where := sql.Where(columns.And(
 					ageCol.GreaterThan(18),
 					nameCol.Like("John%", false),
 				))
-				return table.Select().Where(where)
+				return table.Select("id", "name", "age").Where(where)
 			},
 			expectedSQL:    "SELECT id, name, age FROM users WHERE (age > $1 AND name LIKE $2)",
 			expectedParams: []interface{}{int32(18), "John%"},
@@ -63,7 +61,7 @@ func TestTable_Select(t *testing.T) {
 		{
 			name: "select with order by",
 			setupQuery: func() *sql.SelectQuery {
-				return table.Select().OrderBy("name", "age DESC")
+				return table.Select("id", "name", "age").OrderBy("name", "age DESC")
 			},
 			expectedSQL:    "SELECT id, name, age FROM users ORDER BY name, age DESC",
 			expectedParams: nil,
@@ -71,7 +69,7 @@ func TestTable_Select(t *testing.T) {
 		{
 			name: "select with limit and offset",
 			setupQuery: func() *sql.SelectQuery {
-				return table.Select().Limit(10).Offset(20)
+				return table.Select("id", "name", "age").Limit(10).Offset(20)
 			},
 			expectedSQL:    "SELECT id, name, age FROM users LIMIT 10 OFFSET 20",
 			expectedParams: nil,
@@ -90,8 +88,7 @@ func TestTable_Select(t *testing.T) {
 
 func TestTable_Insert(t *testing.T) {
 	table := sql.Table{
-		Name:        "users",
-		ColumnNames: []string{"id", "name", "age"},
+		Name: "users",
 	}
 
 	tests := []struct {
@@ -135,8 +132,7 @@ func TestTable_Insert(t *testing.T) {
 
 func TestTable_Update(t *testing.T) {
 	table := sql.Table{
-		Name:        "users",
-		ColumnNames: []string{"id", "name", "age"},
+		Name: "users",
 	}
 
 	tests := []struct {
@@ -192,8 +188,7 @@ func TestTable_Update(t *testing.T) {
 
 func TestTable_Delete(t *testing.T) {
 	table := sql.Table{
-		Name:        "users",
-		ColumnNames: []string{"id", "name", "age"},
+		Name: "users",
 	}
 
 	tests := []struct {

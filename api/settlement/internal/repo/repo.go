@@ -6,7 +6,7 @@ import (
 	"github.com/failuretoload/datamonster/settlement/internal/sql"
 	"github.com/failuretoload/datamonster/store"
 	builder "github.com/failuretoload/datamonster/store/sql"
-	"github.com/failuretoload/datamonster/store/sql/operators"
+	"github.com/failuretoload/datamonster/store/sql/columns"
 )
 
 type Repo struct {
@@ -55,7 +55,7 @@ func (r Repo) Select(ctx context.Context, userID string) ([]domain.Settlement, e
 func (r Repo) Get(ctx context.Context, id int, userID string) (domain.Settlement, error) {
 	query, args := r.table.Select().
 		Where(builder.Where(
-			operators.And(
+			columns.And(
 				sql.Columns.ID.Equals(int32(id)),
 				sql.Columns.Owner.Equals(userID),
 			),
@@ -79,8 +79,8 @@ func (r Repo) Insert(ctx context.Context, s domain.Settlement) (int, error) {
 	query, args := r.table.Insert().
 		Columns(
 			sql.Owner,
-			sql.NameColumn,
-			sql.SurvivalLimitColumn,
+			sql.Name,
+			sql.SurvivalLimit,
 			sql.DepartingSurvival,
 			sql.CC,
 			sql.Year,
@@ -88,10 +88,10 @@ func (r Repo) Insert(ctx context.Context, s domain.Settlement) (int, error) {
 		Values(
 			s.Owner,
 			s.Name,
-			int32(s.SurvivalLimit),
-			int32(s.DepartingSurvival),
-			int32(s.CollectiveCognition),
-			int32(s.CurrentYear),
+			sql.Columns.SurvivalLimit.Convert(s.SurvivalLimit),
+			sql.Columns.DepartingSurvival.Convert(s.DepartingSurvival),
+			sql.Columns.CollectiveCog.Convert(s.CollectiveCognition),
+			sql.Columns.Year.Convert(s.CurrentYear),
 		).
 		Returning("id").
 		Build()
